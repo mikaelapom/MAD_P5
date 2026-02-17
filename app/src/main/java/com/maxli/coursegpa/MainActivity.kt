@@ -51,32 +51,8 @@ val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Bold, FontStyle.Italic)
 )
 
-var questionNumber by mutableIntStateOf(1)
-var QuestionsAnswered: Int = 0
-var QuestionsCorrect: Int = 0
-var QuestionsWrong: Int = 0 //Might not need -Diana
 
-//class Question(val question: String, val correctAnswer: String, val wrong1: String, val wrong2: String, val wrong3: String, var answered: Boolean) { }
-
-/*
-val TestQuestion1 = Question("Test Question",
-    "Test Answer",
-    "Test Wrong",
-    "Test Wrong",
-    "Test Wrong",
-    false)
-
-val TestQuestion2 = Question("Test Question2",
-    "Test Answer2",
-    "Test Wrong2",
-    "Test Wrong2",
-    "Test Wrong2",
-    false)
-
-var questionsList = listOf(TestQuestion1, TestQuestion2)
-
- */
-
+val answered = MutableList(10) {false}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,12 +99,14 @@ fun TriviaScreen(
         SecondBanner()
 
         QuestionBox(current, questionIndex)
-
         Spacer(modifier = Modifier.height(8.dp))
+        Score()
 
         AnswerButtons(current) {
             questionIndex = (questionIndex + 1) % questions.size
         }
+
+        Spacer(modifier = Modifier.height(50.dp))
 
         BackForwardReset(
             currentIndex = questionIndex,
@@ -152,26 +130,71 @@ fun TriviaScreen(
 @Composable
 fun AnswerButtons(question: TrivialQuestion, onAnswered: () -> Unit) {
     AnswerRow("A", question.choiceA, onAnswered)
+    Spacer(modifier = Modifier.height(25.dp))
     AnswerRow("B", question.choiceB, onAnswered)
+    Spacer(modifier = Modifier.height(25.dp))
     AnswerRow("C", question.choiceC, onAnswered)
+    Spacer(modifier = Modifier.height(25.dp))
     AnswerRow("D", question.choiceD, onAnswered)
 }
 
 @Composable
 fun QuestionBox(question: TrivialQuestion, index: Int) {
-    Text(
-        text = "Question ${index + 1}: ${question.questionName}",
-        fontSize = 24.sp
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1A2C57))
+            .height(150.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = "Question ${index + 1}: ${question.questionName}",
+            modifier = Modifier.padding(horizontal = 16.dp),
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 30.sp,
+                color = Color(0xFFFBE475)
+            )
+        )
+    }
 }
 
 @Composable
 fun AnswerRow(label: String, text: String, onAnswered: () -> Unit) {
-    Row {
-        Button(onClick = onAnswered) {
-            Text(label)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = {
+                onAnswered()
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(50.dp)
+            ) {
+            Text(label,
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    fontSize = 25.sp,
+                    color = Color(0xFF1A2C57)
+                )
+                )
         }
-        Text(text)
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(text,
+            fontFamily = TimesNewRoman,
+            style = TextStyle(
+                fontSize = 25.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
     }
 }
 
@@ -292,40 +315,17 @@ fun BackForwardReset(
     }
 }
 
-
-/*
 @Composable
-fun AnswerOne() {
+fun Score() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(30.dp)
             .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(50.dp)
-        ) {
-            Text(
-                text = "A", //Didnt use times for font bcs ugly - Diana
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = "${questionsList[questionNumber - 1].correctAnswer}",
+            text = "Grade: ",
             fontFamily = TimesNewRoman,
             style = TextStyle(
                 fontSize = 25.sp,
@@ -334,205 +334,3 @@ fun AnswerOne() {
         )
     }
 }
-
-@Composable
-fun AnswerTwo() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(50.dp)
-        ) {
-            Text(
-                text = "B",
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = "${questionsList[questionNumber - 1].wrong1}",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 25.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun AnswerThree() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(50.dp)
-        ) {
-            Text(
-                text = "C",
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = "${questionsList[questionNumber - 1].wrong2}",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 25.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun AnswerFour() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(50.dp)
-        ) {
-            Text(
-                text = "D",
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 25.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = "${questionsList[questionNumber - 1].wrong3}",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 25.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun backForwardReset() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(100.dp)
-        ) {
-            Text(
-                text = "Back",
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(100.dp)
-        ) {
-            Text(
-                text = "Reset",
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Button(
-            onClick = {
-                questionNumber++
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(100.dp)
-        ) {
-            Text(
-                text = "Next",
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-
-    }
-}
-
-
- */
