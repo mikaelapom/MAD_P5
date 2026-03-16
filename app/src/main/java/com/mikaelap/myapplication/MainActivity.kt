@@ -44,7 +44,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontStyle
 import com.mikaelap.myapplication.MyApplicationTheme
 import kotlin.collections.get
-import kotlin.times
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -53,8 +52,6 @@ val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Bold, FontStyle.Italic)
 )
 
-
-//val answered = MutableList(11) {false}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,18 +66,17 @@ class MainActivity : ComponentActivity() {
                 MainScreen(viewModel = viewModel)
             }
         }
-
     }
 }
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Trivia", "Acad")
+    val tabs = listOf("Trivia", "Acad", "Fame")
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
+        bottomBar = {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = Color(0xFFFBE475),
@@ -95,7 +91,7 @@ fun MainScreen(viewModel: MainViewModel) {
                                 text = title,
                                 style = TextStyle(
                                     fontFamily = TimesNewRoman,
-                                    fontSize = 18.sp,
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             )
@@ -105,14 +101,12 @@ fun MainScreen(viewModel: MainViewModel) {
             }
         }
     ) { innerPadding ->
-        when (selectedTabIndex) {
-            0 -> TriviaScreen(
-                viewModel = viewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
-            1 -> AcadScreen(
-                modifier = Modifier.padding(innerPadding)
-            )
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedTabIndex) {
+                0 -> TriviaScreen(viewModel = viewModel)
+                1 -> AcadScreen()
+                2 -> FameScreen()
+            }
         }
     }
 }
@@ -127,13 +121,29 @@ fun AcadScreen(modifier: Modifier = Modifier) {
             text = "Acad Screen",
             style = TextStyle(
                 fontFamily = TimesNewRoman,
-                fontSize = 30.sp,
+                fontSize = 24.sp,
                 color = Color(0xFF1A2C57)
             )
         )
     }
 }
 
+@Composable
+fun FameScreen(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Fame Screen",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 24.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
 
 @Composable
 fun TriviaScreen(
@@ -143,11 +153,9 @@ fun TriviaScreen(
     val questions by viewModel.allQuestions.observeAsState(emptyList())
     var questionIndex by remember { mutableIntStateOf(0) }
 
-
     var grade by remember { mutableDoubleStateOf(0.0) }
     var questionsAnswered by remember { mutableDoubleStateOf(0.0) }
     var questionsCorrect by remember { mutableDoubleStateOf(0.0) }
-
 
     val answered = remember {
         mutableStateListOf<Boolean>().apply {
@@ -169,8 +177,9 @@ fun TriviaScreen(
         SecondBanner()
 
         QuestionBox(current, questionIndex)
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Score(questionsCorrect, grade)
+        Spacer(modifier = Modifier.height(4.dp))
         AnswerButtons(
             current,
             questionIndex = questionIndex,
@@ -183,11 +192,10 @@ fun TriviaScreen(
                         questionsCorrect++
                     }
                 }
-                grade = questionsCorrect / questionsAnswered
+                grade = if (questionsAnswered > 0) questionsCorrect / questionsAnswered else 0.0
             })
 
-
-        Spacer(modifier = Modifier.height(50.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
         BackForwardReset(
             currentIndex = questionIndex,
@@ -206,11 +214,9 @@ fun TriviaScreen(
                 grade = 0.0
             }
         )
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
-
-
-
 
 @Composable
 fun AnswerButtons(
@@ -220,13 +226,15 @@ fun AnswerButtons(
     onAnswered: (isCorrect: Boolean) -> Unit
 ) {
     val originalList = question.getShuffledAnswers()
-    AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
-    Spacer(modifier = Modifier.height(25.dp))
-    AnswerRow("B", originalList[1], questionIndex,1, originalList, question, answered, onAnswered)
-    Spacer(modifier = Modifier.height(25.dp))
-    AnswerRow("C", originalList[2], questionIndex,2, originalList, question, answered, onAnswered)
-    Spacer(modifier = Modifier.height(25.dp))
-    AnswerRow("D", originalList[3], questionIndex,3, originalList, question, answered, onAnswered)
+    Column {
+        AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("B", originalList[1], questionIndex, 1, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("C", originalList[2], questionIndex, 2, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("D", originalList[3], questionIndex, 3, originalList, question, answered, onAnswered)
+    }
 }
 
 @Composable
@@ -235,15 +243,15 @@ fun QuestionBox(question: TrivialQuestion, index: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFF1A2C57))
-            .height(150.dp),
+            .height(90.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = "Question ${index + 1}: ${question.questionName}",
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 12.dp),
             style = TextStyle(
                 fontFamily = TimesNewRoman,
-                fontSize = 30.sp,
+                fontSize = 18.sp,
                 color = Color(0xFFFBE475)
             )
         )
@@ -262,7 +270,7 @@ fun AnswerRow(label: String,
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(52.dp)
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -272,7 +280,7 @@ fun AnswerRow(label: String,
                 onAnswered(isCorrect)
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (answered[questionIndex] && answerIndex[listIndex] == question.correct) Color.Green//Color(0xFF97CDEC),
+                containerColor = if (answered[questionIndex] && answerIndex[listIndex] == question.correct) Color.Green
                 else if (answered[questionIndex] && answerIndex[listIndex] != question.correct) Color.Red
                 else
                     Color(0xFF97CDEC),
@@ -280,21 +288,22 @@ fun AnswerRow(label: String,
 
             ),
             shape = CircleShape,
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.size(44.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
         ) {
             Text(label,
                 textAlign = TextAlign.Center,
                 style = TextStyle(
-                    fontSize = 25.sp,
+                    fontSize = 18.sp,
                     color = Color(0xFF1A2C57)
                 )
             )
         }
-        Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Text(text,
             fontFamily = TimesNewRoman,
             style = TextStyle(
-                fontSize = 25.sp,
+                fontSize = 18.sp,
                 color = Color(0xFF1A2C57)
             )
         )
@@ -304,43 +313,42 @@ fun AnswerRow(label: String,
 @Preview(showBackground = true)
 @Composable
 fun SecondBanner() {
-    Column {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(Color(0xFFFBE475))
-            , contentAlignment = Alignment.Center
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color(0xFFFBE475)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Trivia Questionnaire",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                color = Color(0xFF1A2C57)
+            )
         )
-        {
-
-            Text(text = "Trivia Questionaire",
-                style = TextStyle(
-                    fontFamily = TimesNewRoman,
-                    fontSize = 30.sp,
-                    color = Color(0xFF1A2C57)
-                ))
-        }
     }
 }
+
 @Composable
 fun TopBanner() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
+            .height(55.dp)
             .background(Color(0xFFFBE475)),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 4.dp)
+            modifier = Modifier.padding(start = 8.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.smith),
                 contentDescription = "Smith College Logo",
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(45.dp)
                     .padding(end = 8.dp)
             )
 
@@ -348,12 +356,11 @@ fun TopBanner() {
                 text = "Smith College",
                 style = TextStyle(
                     fontFamily = TimesNewRoman,
-                    fontSize = 35.sp,
+                    fontSize = 24.sp,
                     color = Color(0xFF1A2C57)
                 )
             )
         }
-
     }
 }
 
@@ -368,10 +375,10 @@ fun BackForwardReset(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
-            .padding(horizontal = 8.dp),
+            .height(75.dp)
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
         Button(
@@ -381,13 +388,12 @@ fun BackForwardReset(
                 contentColor = Color(0xFF1A2C57)
             ),
             shape = CircleShape,
-            modifier = Modifier.size(100.dp),
-            enabled = currentIndex > 0
+            modifier = Modifier.size(68.dp),
+            enabled = currentIndex > 0,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
         ) {
-            Text("Back", fontSize = 20.sp)
+            Text("Back", fontSize = 14.sp)
         }
-
-        Spacer(modifier = Modifier.width(16.dp))
 
         Button(
             onClick = onReset,
@@ -396,12 +402,11 @@ fun BackForwardReset(
                 contentColor = Color(0xFF1A2C57)
             ),
             shape = CircleShape,
-            modifier = Modifier.size(100.dp)
+            modifier = Modifier.size(68.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
         ) {
-            Text("Reset", fontSize = 20.sp)
+            Text("Reset", fontSize = 14.sp)
         }
-
-        Spacer(modifier = Modifier.width(16.dp))
 
         Button(
             onClick = onNext,
@@ -410,10 +415,11 @@ fun BackForwardReset(
                 contentColor = Color(0xFF1A2C57)
             ),
             shape = CircleShape,
-            modifier = Modifier.size(100.dp),
-            enabled = currentIndex < total - 1
+            modifier = Modifier.size(68.dp),
+            enabled = currentIndex < total - 1,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
         ) {
-            Text("Next", fontSize = 20.sp)
+            Text("Next", fontSize = 14.sp)
         }
     }
 }
@@ -424,15 +430,16 @@ fun Score(questionsCorrect: Double, grade: Double) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(30.dp)
-            .padding(horizontal = 8.dp),
+            .height(24.dp)
+            .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = "Grade:  ${questionsCorrect.toInt()}/10",
             fontFamily = TimesNewRoman,
             style = TextStyle(
-                fontSize = 25.sp,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A2C57)
             )
         )
