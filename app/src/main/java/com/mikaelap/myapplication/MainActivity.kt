@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -153,12 +154,16 @@ fun FameScreen(modifier: Modifier = Modifier) {
 fun FactoidBoxes(
     modifier: Modifier = Modifier,
     text: String,
-    backgroundImage: Int? = null
+    backgroundImage: Int? = null,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(color = Color(0xFF97CDEC))
+            .clickable(
+                onClick = onClick
+            )
             .border(width = 3.dp, color = Color(0xFF1A2C57)),
         contentAlignment = Alignment.Center
     ) {
@@ -188,6 +193,11 @@ fun FactoidBoxes(
 
 @Composable
 fun Factoids() {
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        CustomDialog(onDismissRequest = { showDialog = false })
+    }
     Column(
         modifier = Modifier
             //.fillMaxSize() makes it appear like option 1 in group text
@@ -202,18 +212,20 @@ fun Factoids() {
             FactoidBoxes(
                 modifier = Modifier.weight(1f),
                 text = "National Ranking & Academics",
-                backgroundImage = R.drawable.academics
-
+                backgroundImage = R.drawable.academics,
+                onClick = { showDialog = true }
             )
             FactoidBoxes(
                 modifier = Modifier.weight(1f),
                 text = "Sustainability",
-                backgroundImage = R.drawable.smithpark
+                backgroundImage = R.drawable.smithpark,
+                onClick = { showDialog = true }
             )
             FactoidBoxes(
                 modifier = Modifier.weight(1f),
                 text = "Athletics",
-                backgroundImage = R.drawable.athletics
+                backgroundImage = R.drawable.athletics,
+                onClick = { showDialog = true }
             )
         }
 
@@ -226,17 +238,20 @@ fun Factoids() {
             FactoidBoxes(
                 modifier = Modifier.weight(1f),
                 text = "Sylvia Plath",
-                backgroundImage = R.drawable.sylviaplath
+                backgroundImage = R.drawable.sylviaplath,
+                onClick = { showDialog = true }
             )
             FactoidBoxes(
                 modifier = Modifier.weight(1f),
                 text = "Julia Child",
-                backgroundImage = R.drawable.juliachild
+                backgroundImage = R.drawable.juliachild,
+                onClick = { showDialog = true }
             )
             FactoidBoxes(
                 modifier = Modifier.weight(1f),
                 text = "Nancy Reagan",
-                backgroundImage = R.drawable.nancyreagan
+                backgroundImage = R.drawable.nancyreagan,
+                onClick = { showDialog = true }
             )
         }
     }
