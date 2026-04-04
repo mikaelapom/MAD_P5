@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -45,7 +46,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.material3.DropdownMenu
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -57,6 +59,13 @@ val TimesNewRoman = FontFamily(
 data class FactoidData(
     val title: String,
     val description: String
+)
+
+data class schoolEvent(
+    val title: String,
+    val shortDescription: String,
+    val longDescription: String,
+    val date: String
 )
 
 class MainActivity : ComponentActivity() {
@@ -115,12 +124,12 @@ fun MainScreen(viewModel: MainViewModel) {
                 0 -> TriviaScreen(viewModel = viewModel)
                 1 -> AcadScreen()
                 2 -> FameScreen()
-                3 -> EventScreen()
+                3 -> EventScreen(modifier = Modifier
+                    .fillMaxSize())
             }
         }
     }
 }
-
 @Composable
 fun AcadScreen(modifier: Modifier = Modifier) {
     Box(
@@ -140,21 +149,76 @@ fun AcadScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun EventScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    val eventsList = mutableListOf<schoolEvent>(testEvent1, testEvent2, testEvent3, testEvent4, testEvent5, testEvent6, testEvent7)
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = Color(0xFF1A2C57))
     ) {
-        Text(
-            text = "Acad Screen",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 24.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
+        item {
+            EventTab(eventsList, 0)
+            EventTab(eventsList, 1)
+            EventTab(eventsList, 2)
+            EventTab(eventsList, 3)
+            EventTab(eventsList, 4)
+            EventTab(eventsList, 5)
+            EventTab(eventsList, 6)
+        }
     }
 }
 
+@Composable
+fun EventTab(events: List<schoolEvent>, slotNumber: Int) {
+    val boxHeight = (LocalConfiguration.current.screenHeightDp.dp-48.dp)/6 //48dp for the tabs subtracted from
+    var isExpanded by remember { mutableStateOf(false) }           // screen height (variable)/6 to get six events per screen
+    Box(
+        modifier = Modifier
+            .height(boxHeight)
+            .fillMaxWidth()
+            .clickable { isExpanded = !isExpanded }
+    ) {
+        Text(
+            text = events[slotNumber].title,
+            color = Color(0xAFFFFFFF),
+            fontFamily = TimesNewRoman,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp)
+        )
+        Text(
+            text = events[slotNumber].shortDescription,
+            color = Color(0xAFFFFFFF),
+            fontFamily = TimesNewRoman,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(Alignment.Center)
+        )
+        Text(
+            text = events[slotNumber].date,
+            color = Color(0xAFFFFFFF),
+            fontFamily = TimesNewRoman,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+        )
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = {isExpanded = false},
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = Color(0xFF1A2C57))
+                .height(boxHeight)
+        ) {
+            Text(
+                text = events[slotNumber].longDescription,
+                color = Color(0xAFFFFFFF),
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
 @Composable
 fun FameScreen(modifier: Modifier = Modifier) {
 
