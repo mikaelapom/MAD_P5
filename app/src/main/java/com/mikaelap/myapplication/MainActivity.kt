@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
     var selectedTabIndex by remember { mutableIntStateOf(3) }
-    val tabs = listOf("Trivia", "Acad", "Fame", "Events") //list out each tab
+    val tabs = listOf("Trivia", "Acad", "Fame", "Events", "Settings") //list out each tab
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -128,8 +128,26 @@ fun MainScreen(viewModel: MainViewModel) {
                 2 -> FameScreen()
                 3 -> EventScreen(modifier = Modifier
                     .fillMaxSize())
+                4 -> SettingsScreen()
             }
         }
+    }
+}
+
+@Composable
+fun SettingsScreen(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Settings Screen",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 24.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
     }
 }
 @Composable
