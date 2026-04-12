@@ -12,6 +12,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: TrivialQuestionRepository
     val searchResults: MutableLiveData<List<TrivialQuestion>>
 
+    val allCourses: LiveData<List<Course>>
+    private val courseRepository: CourseRepository
+    val courseSearchResults: MutableLiveData<List<Course>>
+
     init {
         val questionDb = TrivialQuestionRoomDatabase.getInstance(application)
         val dao = questionDb.TrivialQuestionDao()
@@ -19,6 +23,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         allQuestions = repository.allQuestions
         searchResults = repository.searchResults
+
+        val courseDao = questionDb.courseDao()
+        courseRepository = CourseRepository(courseDao)
+        allCourses = courseRepository.allCourses
+        courseSearchResults = courseRepository.searchResults
+
+        preloadQuestions()
 
         preloadQuestions()
     }
@@ -31,5 +42,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun insertQuestion(question: TrivialQuestion) {
         repository.insertQuestion(question)
+    }
+
+    fun insertCourse(course: Course) {
+        courseRepository.insertCourse(course)
+    }
+
+    fun deleteCourse(id: Int) {
+        courseRepository.deleteCourse(id)
+    }
+
+    fun smartSearch(courseName: String?, creditHour: String?, letterGrade: String?) {
+        courseRepository.smartSearch(courseName, creditHour, letterGrade)
     }
 }

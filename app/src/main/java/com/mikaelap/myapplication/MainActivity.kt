@@ -2,6 +2,7 @@ package com.mikaelap.myapplication
 
 import android.R.id
 import android.annotation.SuppressLint
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,7 +22,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,8 +50,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.ViewModel
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -89,8 +95,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    var selectedTabIndex by remember { mutableIntStateOf(3) }
-    val tabs = listOf("Trivia", "Acad", "Fame", "Events", "Settings") //list out each tab
+    var selectedTabIndex by remember { mutableIntStateOf(4) }
+    val tabs = listOf("Trivia", "Acad", "Fame", "Events", "⚙\uFE0F") //list out each tab
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -124,7 +130,7 @@ fun MainScreen(viewModel: MainViewModel) {
             .border(width = 2.dp, color = Color(0xFF1A2C57))) {
             when (selectedTabIndex) {
                 0 -> TriviaScreen(viewModel = viewModel)
-                1 -> AcadScreen()
+                1 -> AcadScreen(viewModel = viewModel)
                 2 -> FameScreen()
                 3 -> EventScreen(modifier = Modifier
                     .fillMaxSize())
@@ -134,12 +140,16 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 }
 
+//Tab Screens
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = Color(0xFF1A2C57))
     ) {
+        TopBanner()
+        SettingsBanner()
         Text(
             text = "Settings Screen",
             style = TextStyle(
@@ -149,21 +159,236 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             )
         )
     }
+
 }
 @Composable
-fun AcadScreen(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+fun AcadScreen(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    val allCourses by viewModel.allCourses.observeAsState(listOf())
+    val searchResults by viewModel.courseSearchResults.observeAsState(listOf())
+
+    Column(
+        modifier = modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Acad Screen",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 24.sp,
-                color = Color(0xFF1A2C57)
-            )
+        TopBanner()
+        FameBanner()
+
+        GPAScreen(
+            allCourses = allCourses,
+            searchResults = searchResults,
+            viewModel = viewModel
         )
+    }
+}
+
+@Composable
+fun GPAScreen(
+    allCourses: List<Course>,
+    searchResults: List<Course>,
+    viewModel: MainViewModel
+) {
+    var courseName by remember { mutableStateOf("") }
+    var courseCreditHour by remember { mutableStateOf("") }
+    var letterGrade by remember {
+        mutableStateOf("")
+    }
+
+    var calculatedGPA by remember {
+        mutableDoubleStateOf(-1.0)
+    }
+
+    var searching by remember { mutableStateOf(false) }
+
+    var creditHourError by remember { mutableStateOf(false) }
+
+    var letterGradeError by remember { mutableStateOf(false) }
+
+    var courseNameError by remember { mutableStateOf(false) }
+
+    var courseNameErrorMessage by remember {
+        mutableStateOf("Please enter a course name")
+    }
+
+    val onCourseTextChange = { text : String ->
+        courseName = text
+        courseNameError = false
+    }
+
+    val onCreditHourTextChange = { text: String ->
+        if (text.all { it.isDigit() }) {
+            courseCreditHour = text
+            creditHourError = false
+        } else {
+            creditHourError = true
+        }
+    }
+
+    val onLetterGradeTextChange = { text: String ->
+        val upper = text.uppercase()
+
+        if (upper.length <= 1 && upper.all { it in "ABCDF" }) {
+            letterGrade = upper
+            letterGradeError = false
+        } else {
+            letterGradeError = true
+        }
+    }
+
+    //use column to create text fields
+    Column(
+        horizontalAlignment = CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        com.mikaelap.myapplication.CustomTextField(
+            title = "Course Name",
+            textState = courseName,
+            onTextChange = onCourseTextChange,
+            keyboardType = KeyboardType.Text,
+            isError = courseNameError,
+            errorMessage = courseNameErrorMessage
+//            Modifier.border(width = 0.5.dp, Color(0xFF1A2C57))
+        )
+
+        com.mikaelap.myapplication.CustomTextField(
+            title = "Credit Hour",
+            textState = courseCreditHour,
+            onTextChange = onCreditHourTextChange,
+            keyboardType = KeyboardType.Number,
+            isError = creditHourError,
+            errorMessage = "Please enter a number"
+        )
+
+
+        com.mikaelap.myapplication.CustomTextField(
+            title = "Letter Grade",
+            textState = letterGrade,
+            onTextChange = onLetterGradeTextChange,
+            keyboardType = KeyboardType.Text,
+            isError = letterGradeError,
+            errorMessage = "Enter A, B, C, D, or F"
+        )
+
+
+
+        //use row to arrange the buttons
+        Row(
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.dp) //was 10.dp
+        ) {
+            Button(
+                onClick = {
+                    //field checking
+                    courseNameError = courseName.isBlank()
+                    if (courseNameError) {
+                        courseNameErrorMessage = "Please enter a course name"
+                    }
+                    creditHourError = courseCreditHour.isBlank() || !courseCreditHour.all { it.isDigit() }
+                    letterGradeError = letterGrade.isBlank() || !(letterGrade.length == 1 && letterGrade.all { it in "ABCDF" })
+
+                    //check all possible errors
+                    if (!courseNameError && !creditHourError && !letterGradeError) {
+                        val duplicate = allCourses.any { it.courseName.equals(courseName, ignoreCase = true) }
+                        if (duplicate) {
+                            courseNameError = true
+                            courseNameErrorMessage = "Course already added"
+                        } else {
+                            //if no error then insrt
+                            viewModel.insertCourse(
+                                Course(courseName, courseCreditHour.toInt(), letterGrade)
+                            )
+                            searching = false
+                            courseName = ""
+                            courseCreditHour = ""
+                            letterGrade = ""
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF97CDEC),
+                    contentColor = Color(0xFF1A2C57)
+                )
+            ) { Text("Add") }
+
+            Button(onClick = {
+                searching = true
+                viewModel.smartSearch(courseName, courseCreditHour, letterGrade)
+            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC), contentColor = Color(0xFF1A2C57))
+            ) {
+                Text("Search")
+            }
+
+
+            Button(onClick = {
+                searching = false
+                val courseToDelete = allCourses.firstOrNull {
+                    it.courseName.equals(courseName, ignoreCase = true)
+                }
+
+// Only delete if a matching course exists
+                courseToDelete?.let {
+                    viewModel.deleteCourse(it.id)
+                }
+
+            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC),contentColor = Color(0xFF1A2C57))
+            ) {
+                Text("Del")
+            }
+            calculatedGPA = com.mikaelap.myapplication.calculateGPA2(allCourses)
+
+            Button(onClick = {
+                searching = false
+                courseName = ""
+                courseCreditHour = ""
+                letterGrade = ""
+            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC),contentColor = Color(0xFF1A2C57))
+            ) {
+                Text("Clear")
+            }
+
+            Button(onClick = {
+
+                val gpa = com.mikaelap.myapplication.calculateGPA2(allCourses)
+                calculatedGPA = gpa
+
+            }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC),contentColor = Color(0xFF1A2C57))
+            ) {
+                Text("GPA")
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+        ) {
+            Text("GPA: %.2f".format(calculatedGPA))
+        }
+
+        LazyColumn(
+        ) {
+            val list = if (searching) searchResults else allCourses
+
+            item {
+                com.mikaelap.myapplication.TitleRow(
+                    head1 = "ID",
+                    head2 = "Course",
+                    head3 = "Credit Hour",
+                    head4 = "Letter Grade",
+                )
+            }
+
+            items(list) { course ->
+                com.mikaelap.myapplication.CourseRow(
+                    id = course.id,
+                    name = course.courseName,
+                    creditHour = course.creditHour,
+                    letterGrade = course.letterGrade
+                )
+            }
+        }
     }
 }
 
@@ -193,27 +418,6 @@ fun EventScreen(modifier: Modifier = Modifier) {
                 EventTab(eventsList, 9)
             }
         }
-    }
-}
-
-@Composable
-fun ScrollBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(35.dp)
-            .background(Color(0xFF1A2C57)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Take a scroll through this month's events ↓",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-            )
-        )
     }
 }
 
@@ -317,46 +521,421 @@ fun FameScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun FactoidBoxes(
-    modifier: Modifier = Modifier,
-    text: String,
-    backgroundImage: Int? = null,
-    onClick: () -> Unit
+fun TriviaScreen(
+    viewModel: MainViewModel,
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(color = Color(0xFF97CDEC))
-            .clickable(
-                onClick = onClick
-            )
-            .border(width = 3.dp, color = Color(0xFF1A2C57)),
-        contentAlignment = Alignment.Center
-    ) {
-        if (backgroundImage != null) {
-            Image(
-                painter = painterResource(id = backgroundImage),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
-        Text(
-            text = text,
-            color = Color(0xAFFFFFFF),
-            fontFamily = TimesNewRoman,
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center
-        )
+    val questions by viewModel.allQuestions.observeAsState(emptyList())
+    var questionIndex by remember { mutableIntStateOf(0) }
 
+    var grade by remember { mutableDoubleStateOf(0.0) }
+    var questionsAnswered by remember { mutableDoubleStateOf(0.0) }
+    var questionsCorrect by remember { mutableDoubleStateOf(0.0) }
+
+    val answered = remember {
+        mutableStateListOf<Boolean>().apply {
+            repeat(10) { add(false) }
+        }
+    }
+
+    if (questions.isEmpty()) {
+        Text("No questions in database")
+        return
+    }
+
+    val current = questions[questionIndex]
+
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        TopBanner()
+        TriviaBanner()
+
+        QuestionBox(current, questionIndex)
+        Spacer(modifier = Modifier.height(4.dp))
+        Score(questionsCorrect, grade)
+        Spacer(modifier = Modifier.height(4.dp))
+        AnswerButtons(
+            current,
+            questionIndex = questionIndex,
+            answered,
+            onAnswered = { isCorrect ->
+                if (!answered[questionIndex]) {
+                    answered[questionIndex] = true
+                    questionsAnswered++
+                    if (isCorrect) {
+                        questionsCorrect++
+                    }
+                }
+                grade = if (questionsAnswered > 0) questionsCorrect / questionsAnswered else 0.0
+            })
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        BackForwardReset(
+            currentIndex = questionIndex,
+            total = questions.size,
+            onBack = {
+                if (questionIndex > 0) questionIndex--
+            },
+            onNext = {
+                if (questionIndex < 9) questionIndex++
+            },
+            onReset = {
+                questionIndex = 0
+                questionsAnswered = 0.0
+                questionsCorrect = 0.0
+                answered.fill(false)
+                grade = 0.0
+            }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
+//function from alert dialogue burner code
+@Composable
+fun CustomDialog(
+    factoid: FactoidData,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismissRequest() },
+
+        title = {
+            Text(text = factoid.title)
+        },
+
+        text = {
+            Column {
+                Text(factoid.description)
+                Spacer(modifier = Modifier.height(8.dp))
+
+            }
+        },
+
+        confirmButton = {
+            Button(onClick = { onDismissRequest() }) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+//Banners
+@Preview(showBackground = true)
+@Composable
+fun TriviaBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color(0xFFFBE475)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Trivia Questionnaire",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FameBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color(0xFFFBE475)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Fame & Achievements",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+@Composable
+fun SettingsBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color(0xFFFBE475)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Settings",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+@Composable
+fun EventBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color(0xFFFBE475)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Events & Student Life",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+@Composable
+fun TopBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(55.dp)
+            .background(Color(0xFFFBE475)),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 8.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.smith),
+                contentDescription = "Smith College Logo",
+                modifier = Modifier
+                    .size(45.dp)
+                    .padding(end = 8.dp)
+            )
+
+            Text(
+                text = "Smith College",
+                style = TextStyle(
+                    fontFamily = TimesNewRoman,
+                    fontSize = 24.sp,
+                    color = Color(0xFF1A2C57)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun ScrollBanner() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(35.dp)
+            .background(Color(0xFF1A2C57)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Take a scroll through this month's events ↓",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+            )
+        )
+    }
+}
+
+//Trivia Functions
+@Composable
+fun BackForwardReset(
+    currentIndex: Int,
+    total: Int,
+    onBack: () -> Unit,
+    onNext: () -> Unit,
+    onReset: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(75.dp)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+
+        Button(
+            onClick = onBack,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(68.dp),
+            enabled = currentIndex > 0,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text("Back", fontSize = 14.sp)
+        }
+
+        Button(
+            onClick = onReset,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(68.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text("Reset", fontSize = 14.sp)
+        }
+
+        Button(
+            onClick = onNext,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(68.dp),
+            enabled = currentIndex < total - 1,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text("Next", fontSize = 14.sp)
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+fun Score(questionsCorrect: Double, grade: Double) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(24.dp)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Grade:  ${questionsCorrect.toInt()}/10",
+            fontFamily = TimesNewRoman,
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+
+@Composable
+fun AnswerButtons(
+    question: TrivialQuestion,
+    questionIndex: Int,
+    answered: MutableList<Boolean>,
+    onAnswered: (isCorrect: Boolean) -> Unit
+) {
+    val originalList = question.getShuffledAnswers()
+    Column {
+        AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("B", originalList[1], questionIndex, 1, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("C", originalList[2], questionIndex, 2, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("D", originalList[3], questionIndex, 3, originalList, question, answered, onAnswered)
+    }
+}
+
+@Composable
+fun QuestionBox(question: TrivialQuestion, index: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1A2C57))
+            .height(90.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = "Question ${index + 1}: ${question.questionName}",
+            modifier = Modifier.padding(horizontal = 12.dp),
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                color = Color(0xFFFBE475)
+            )
+        )
+    }
+}
+
+@Composable
+fun AnswerRow(label: String,
+              text: String,
+              questionIndex: Int,
+              listIndex: Int,
+              answerIndex: List<String>,
+              question: TrivialQuestion,
+              answered: List<Boolean>,
+              onAnswered: (isCorrect: Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = {
+                val isCorrect = answerIndex[listIndex] == question.correct
+                onAnswered(isCorrect)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (answered[questionIndex] && answerIndex[listIndex] == question.correct) Color.Green
+                else if (answered[questionIndex] && answerIndex[listIndex] != question.correct) Color.Red
+                else
+                    Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(44.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text(label,
+                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    color = Color(0xFF1A2C57)
+                )
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text,
+            fontFamily = TimesNewRoman,
+            style = TextStyle(
+                fontSize = 18.sp,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+//Fame Functions
 @Composable
 fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
 
@@ -461,372 +1040,143 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
 }
 
 @Composable
-fun TriviaScreen(
-    viewModel: MainViewModel,
-    modifier: Modifier = Modifier
+fun FactoidBoxes(
+    modifier: Modifier = Modifier,
+    text: String,
+    backgroundImage: Int? = null,
+    onClick: () -> Unit
 ) {
-    val questions by viewModel.allQuestions.observeAsState(emptyList())
-    var questionIndex by remember { mutableIntStateOf(0) }
-
-    var grade by remember { mutableDoubleStateOf(0.0) }
-    var questionsAnswered by remember { mutableDoubleStateOf(0.0) }
-    var questionsCorrect by remember { mutableDoubleStateOf(0.0) }
-
-    val answered = remember {
-        mutableStateListOf<Boolean>().apply {
-            repeat(10) { add(false) }
-        }
-    }
-
-    if (questions.isEmpty()) {
-        Text("No questions in database")
-        return
-    }
-
-    val current = questions[questionIndex]
-
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        TopBanner()
-        SecondBanner()
-
-        QuestionBox(current, questionIndex)
-        Spacer(modifier = Modifier.height(4.dp))
-        Score(questionsCorrect, grade)
-        Spacer(modifier = Modifier.height(4.dp))
-        AnswerButtons(
-            current,
-            questionIndex = questionIndex,
-            answered,
-            onAnswered = { isCorrect ->
-                if (!answered[questionIndex]) {
-                    answered[questionIndex] = true
-                    questionsAnswered++
-                    if (isCorrect) {
-                        questionsCorrect++
-                    }
-                }
-                grade = if (questionsAnswered > 0) questionsCorrect / questionsAnswered else 0.0
-            })
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        BackForwardReset(
-            currentIndex = questionIndex,
-            total = questions.size,
-            onBack = {
-                if (questionIndex > 0) questionIndex--
-            },
-            onNext = {
-                if (questionIndex < 9) questionIndex++
-            },
-            onReset = {
-                questionIndex = 0
-                questionsAnswered = 0.0
-                questionsCorrect = 0.0
-                answered.fill(false)
-                grade = 0.0
-            }
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-}
-
-//function from alert dialogue burner code
-@Composable
-fun CustomDialog(
-    factoid: FactoidData,
-    onDismissRequest: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = { onDismissRequest() },
-
-        title = {
-            Text(text = factoid.title)
-        },
-
-        text = {
-            Column {
-                Text(factoid.description)
-                Spacer(modifier = Modifier.height(8.dp))
-
-            }
-        },
-
-        confirmButton = {
-            Button(onClick = { onDismissRequest() }) {
-                Text("Close")
-            }
-        }
-    )
-}
-
-@Composable
-fun AnswerButtons(
-    question: TrivialQuestion,
-    questionIndex: Int,
-    answered: MutableList<Boolean>,
-    onAnswered: (isCorrect: Boolean) -> Unit
-) {
-    val originalList = question.getShuffledAnswers()
-    Column {
-        AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("B", originalList[1], questionIndex, 1, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("C", originalList[2], questionIndex, 2, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("D", originalList[3], questionIndex, 3, originalList, question, answered, onAnswered)
-    }
-}
-
-@Composable
-fun QuestionBox(question: TrivialQuestion, index: Int) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF1A2C57))
-            .height(90.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Text(
-            text = "Question ${index + 1}: ${question.questionName}",
-            modifier = Modifier.padding(horizontal = 12.dp),
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFFFBE475)
+        modifier = modifier
+            .fillMaxSize()
+            .background(color = Color(0xFF97CDEC))
+            .clickable(
+                onClick = onClick
             )
-        )
-    }
-}
-
-@Composable
-fun AnswerRow(label: String,
-              text: String,
-              questionIndex: Int,
-              listIndex: Int,
-              answerIndex: List<String>,
-              question: TrivialQuestion,
-              answered: List<Boolean>,
-              onAnswered: (isCorrect: Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = {
-                val isCorrect = answerIndex[listIndex] == question.correct
-                onAnswered(isCorrect)
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (answered[questionIndex] && answerIndex[listIndex] == question.correct) Color.Green
-                else if (answered[questionIndex] && answerIndex[listIndex] != question.correct) Color.Red
-                else
-                    Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(44.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text(label,
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 18.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text,
-            fontFamily = TimesNewRoman,
-            style = TextStyle(
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SecondBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
+            .border(width = 3.dp, color = Color(0xFF1A2C57)),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "Trivia Questionnaire",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FameBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Fame & Achievements",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun EventBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Events & Student Life",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun TopBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 8.dp)
-        ) {
+        if (backgroundImage != null) {
             Image(
-                painter = painterResource(id = R.drawable.smith),
-                contentDescription = "Smith College Logo",
-                modifier = Modifier
-                    .size(45.dp)
-                    .padding(end = 8.dp)
-            )
-
-            Text(
-                text = "Smith College",
-                style = TextStyle(
-                    fontFamily = TimesNewRoman,
-                    fontSize = 24.sp,
-                    color = Color(0xFF1A2C57)
-                )
+                painter = painterResource(id = backgroundImage),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
         }
-    }
-}
-
-@Composable
-fun BackForwardReset(
-    currentIndex: Int,
-    total: Int,
-    onBack: () -> Unit,
-    onNext: () -> Unit,
-    onReset: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(75.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-
-        Button(
-            onClick = onBack,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            enabled = currentIndex > 0,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Back", fontSize = 14.sp)
-        }
-
-        Button(
-            onClick = onReset,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Reset", fontSize = 14.sp)
-        }
-
-        Button(
-            onClick = onNext,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            enabled = currentIndex < total - 1,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Next", fontSize = 14.sp)
-        }
-    }
-}
-
-@SuppressLint("DefaultLocale")
-@Composable
-fun Score(questionsCorrect: Double, grade: Double) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(24.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        )
         Text(
-            text = "Grade:  ${questionsCorrect.toInt()}/10",
+            text = text,
+            color = Color(0xAFFFFFFF),
             fontFamily = TimesNewRoman,
-            style = TextStyle(
-                fontSize = 18.sp,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Center
+        )
+
+    }
+}
+
+//GPA Calculator
+// GPA calculation functionality
+private fun calculateGPA2(allCourses: List<Course>): Double {
+    // Dummy data for illustration. Replace with actual data retrieval and calculation logic
+
+    val gradePoints = mapOf("A" to 4.0, "B" to 3.0, "C" to 2.0, "D" to 1.0, "F" to 0.0,"a" to 4.0, "b" to 3.0, "c" to 2.0, "d" to 1.0, "f" to 0.0)
+    val totalCreditHours = allCourses.sumOf { it.creditHour }
+    val totalPoints = allCourses.sumOf { it.creditHour * (gradePoints[it.letterGrade] ?: 0.0) }
+
+    return if (totalCreditHours > 0) totalPoints / totalCreditHours else 0.0
+}
+
+@Composable
+fun TitleRow(head1: String, head2: String, head3: String, head4: String) {
+    Row(
+        modifier = Modifier
+            .background(Color(0xFFFBE475))
+            //.border(width = 0.5.dp, Color.Black)
+            .fillMaxWidth()
+            .padding(5.dp)
+    ) {
+        val timesNewRomanStyle = TextStyle(fontFamily = com.mikaelap.myapplication.TimesNewRoman,
+            fontSize = 18.sp,
+            color = Color(0xFF1A2C57)
+        )
+
+        Text(head1, style = timesNewRomanStyle,
+            modifier = Modifier
+                .weight(0.1f))
+        Text(head2, style = timesNewRomanStyle,
+            modifier = Modifier
+                .weight(0.2f))
+        Text(head3, style = timesNewRomanStyle,
+            modifier = Modifier.weight(0.2f))
+        Text(head4, style = timesNewRomanStyle,
+            modifier = Modifier.weight(0.2f))
+    }
+}
+
+@Composable
+fun CourseRow(id: Int, name: String, creditHour: Int, letterGrade: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+    ) {
+        Text(id.toString(), modifier = Modifier
+            .weight(0.1f))
+        Text(name, modifier = Modifier.weight(0.2f))
+        Text(creditHour.toString(), modifier = Modifier.weight(0.2f))
+        Text(letterGrade, modifier = Modifier.weight(0.2f))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTextField(
+    title: String,
+    textState: String,
+    onTextChange: (String) -> Unit,
+    keyboardType: KeyboardType,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+    errorMessage: String? = null
+) {
+    Column {
+        OutlinedTextField(
+            value = textState,
+            onValueChange = onTextChange,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            singleLine = true,
+            label = { Text(title) },
+            isError = isError,
+            modifier = modifier.padding(10.dp),
+            textStyle = TextStyle(
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A2C57)
+                fontSize = 30.sp
             )
         )
+
+        if (isError && errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        }
+    }
+}
+
+
+
+//creates view model
+class MainViewModelFactory(val application: Application) :
+    ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return MainViewModel(application) as T
     }
 }
