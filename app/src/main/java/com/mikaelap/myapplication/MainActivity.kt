@@ -55,6 +55,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.ViewModel
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -95,8 +97,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    var selectedTabIndex by remember { mutableIntStateOf(4) }
-    val tabs = listOf("Trivia", "Acad", "Fame", "Events", "⚙\uFE0F") //list out each tab
+    var selectedTabIndex by remember { mutableIntStateOf(2) }
+    val tabs = listOf("Trivia", "Acad", "Home", "Events", "⚙\uFE0F") //list out each tab
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -155,8 +157,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             style = TextStyle(
                 fontFamily = TimesNewRoman,
                 fontSize = 24.sp,
-                color = Color(0xFF1A2C57)
-            )
+                color = Color.White
+            ),
+            modifier = Modifier.padding(16.dp)
         )
     }
 
@@ -228,7 +231,7 @@ fun GPAScreen(
     val onLetterGradeTextChange = { text: String ->
         val upper = text.uppercase()
 
-        if (upper.length <= 1 && upper.all { it in "ABCDF" }) {
+        if (upper.length <= 1 && upper.all { it in "ABCDE" }) {
             letterGrade = upper
             letterGradeError = false
         } else {
@@ -268,7 +271,7 @@ fun GPAScreen(
             onTextChange = onLetterGradeTextChange,
             keyboardType = KeyboardType.Text,
             isError = letterGradeError,
-            errorMessage = "Enter A, B, C, D, or F"
+            errorMessage = "Enter A, B, C, D, or E"
         )
 
 
@@ -288,7 +291,7 @@ fun GPAScreen(
                         courseNameErrorMessage = "Please enter a course name"
                     }
                     creditHourError = courseCreditHour.isBlank() || !courseCreditHour.all { it.isDigit() }
-                    letterGradeError = letterGrade.isBlank() || !(letterGrade.length == 1 && letterGrade.all { it in "ABCDF" })
+                    letterGradeError = letterGrade.isBlank() || !(letterGrade.length == 1 && letterGrade.all { it in "ABCDE" })
 
                     //check all possible errors
                     if (!courseNameError && !creditHourError && !letterGradeError) {
@@ -520,30 +523,23 @@ fun FameScreen(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TriviaScreen(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val questions by viewModel.allQuestions.observeAsState(emptyList())
+    val questionsFromDb by viewModel.allQuestions.observeAsState(emptyList())
+    
+    var numQuestionsInput by remember { mutableStateOf("") }
+    var isStarted by remember { mutableStateOf(false) }
+    var activeQuestions by remember { mutableStateOf<List<TrivialQuestion>>(emptyList()) }
     var questionIndex by remember { mutableIntStateOf(0) }
+    var showGrade by remember { mutableStateOf(false) }
+    var inputError by remember { mutableStateOf(false) }
 
-    var grade by remember { mutableDoubleStateOf(0.0) }
-    var questionsAnswered by remember { mutableDoubleStateOf(0.0) }
-    var questionsCorrect by remember { mutableDoubleStateOf(0.0) }
-
-    val answered = remember {
-        mutableStateListOf<Boolean>().apply {
-            repeat(10) { add(false) }
-        }
-    }
-
-    if (questions.isEmpty()) {
-        Text("No questions in database")
-        return
-    }
-
-    val current = questions[questionIndex]
+    val userSelections = remember { mutableStateMapOf<Int, String>() }
+    val shuffledAnswersMap = remember { mutableStateMapOf<Int, List<String>>() }
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -551,45 +547,188 @@ fun TriviaScreen(
         TopBanner()
         TriviaBanner()
 
-        QuestionBox(current, questionIndex)
-        Spacer(modifier = Modifier.height(4.dp))
-        Score(questionsCorrect, grade)
-        Spacer(modifier = Modifier.height(4.dp))
-        AnswerButtons(
-            current,
-            questionIndex = questionIndex,
-            answered,
-            onAnswered = { isCorrect ->
-                if (!answered[questionIndex]) {
-                    answered[questionIndex] = true
-                    questionsAnswered++
-                    if (isCorrect) {
-                        questionsCorrect++
-                    }
+        if (!isStarted) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    onClick = { viewModel.loadQuestions() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF97CDEC),
+                        contentColor = Color(0xFF1A2C57)
+                    )
+                ) {
+                    Text("Load")
                 }
-                grade = if (questionsAnswered > 0) questionsCorrect / questionsAnswered else 0.0
-            })
 
-        Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(16.dp))
 
-        BackForwardReset(
-            currentIndex = questionIndex,
-            total = questions.size,
-            onBack = {
-                if (questionIndex > 0) questionIndex--
-            },
-            onNext = {
-                if (questionIndex < 9) questionIndex++
-            },
-            onReset = {
-                questionIndex = 0
-                questionsAnswered = 0.0
-                questionsCorrect = 0.0
-                answered.fill(false)
-                grade = 0.0
+                OutlinedTextField(
+                    value = numQuestionsInput,
+                    onValueChange = { 
+                        if (it.isEmpty() || (it.all { char -> char.isDigit() } && it.toInt() in 1..10)) {
+                            numQuestionsInput = it
+                            inputError = false
+                        } else {
+                            inputError = true
+                        }
+                    },
+                    label = { Text("Number of Questions") },
+                    isError = inputError,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (inputError) {
+                    Text("Enter a number between 1 and 10", color = Color.Red, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        val n = numQuestionsInput.toIntOrNull()
+                        if (n != null && n in 1..10 && questionsFromDb.isNotEmpty()) {
+                            // Ensure unique questions by taking distinct ones (though shuffled usually handles it)
+                            activeQuestions = questionsFromDb.distinctBy { it.questionName }.shuffled().take(n)
+                            shuffledAnswersMap.clear()
+                            activeQuestions.forEachIndexed { index, q ->
+                                shuffledAnswersMap[index] = q.getShuffledAnswers()
+                            }
+                            isStarted = true
+                            questionIndex = 0
+                            userSelections.clear()
+                            showGrade = false
+                        }
+                    },
+                    enabled = numQuestionsInput.isNotEmpty() && !inputError && questionsFromDb.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF97CDEC),
+                        contentColor = Color(0xFF1A2C57)
+                    )
+                ) {
+                    Text("Go")
+                }
             }
+        } else {
+            val current = activeQuestions[questionIndex]
+            val answers = shuffledAnswersMap[questionIndex] ?: emptyList()
+
+            QuestionBox(current, questionIndex)
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+                answers.forEach { answer ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { userSelections[questionIndex] = answer }
+                    ) {
+                        RadioButton(
+                            selected = (userSelections[questionIndex] == answer),
+                            onClick = { userSelections[questionIndex] = answer },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = Color(0xFF1A2C57),
+                                unselectedColor = Color(0xFF97CDEC)
+                            )
+                        )
+                        Text(
+                            text = answer,
+                            fontFamily = TimesNewRoman,
+                            fontSize = 18.sp,
+                            color = Color(0xFF1A2C57),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (showGrade) {
+                val correctCount = activeQuestions.filterIndexed { index, q ->
+                    userSelections[index] == q.correct
+                }.size
+                ScoreText("${correctCount}/${activeQuestions.size}")
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(
+                    onClick = { showGrade = true },
+                    enabled = userSelections.size == activeQuestions.size,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (userSelections.size == activeQuestions.size) Color(0xFF97CDEC) else Color.Gray,
+                        contentColor = Color(0xFF1A2C57)
+                    ),
+                    shape = CircleShape,
+                    modifier = Modifier.width(150.dp).height(48.dp)
+                ) {
+                    Text("Grade", fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = { if (questionIndex > 0) questionIndex-- },
+                        enabled = questionIndex > 0,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC), contentColor = Color(0xFF1A2C57)),
+                        shape = CircleShape, modifier = Modifier.size(68.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    ) { Text("Back", fontSize = 14.sp) }
+
+                    Button(
+                        onClick = { 
+                            isStarted = false
+                            numQuestionsInput = ""
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC), contentColor = Color(0xFF1A2C57)),
+                        shape = CircleShape, modifier = Modifier.size(68.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    ) { Text("Reset", fontSize = 14.sp) }
+
+                    Button(
+                        onClick = { if (questionIndex < activeQuestions.size - 1) questionIndex++ },
+                        enabled = questionIndex < activeQuestions.size - 1,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC), contentColor = Color(0xFF1A2C57)),
+                        shape = CircleShape, modifier = Modifier.size(68.dp),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                    ) { Text("Next", fontSize = 14.sp) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ScoreText(score: String) {
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Text(
+            text = "Score: $score",
+            style = TextStyle(
+                fontFamily = TimesNewRoman,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A2C57)
+            )
         )
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -1085,7 +1224,7 @@ fun FactoidBoxes(
 private fun calculateGPA2(allCourses: List<Course>): Double {
     // Dummy data for illustration. Replace with actual data retrieval and calculation logic
 
-    val gradePoints = mapOf("A" to 4.0, "B" to 3.0, "C" to 2.0, "D" to 1.0, "F" to 0.0,"a" to 4.0, "b" to 3.0, "c" to 2.0, "d" to 1.0, "f" to 0.0)
+    val gradePoints = mapOf("A" to 4.0, "B" to 3.0, "C" to 2.0, "D" to 1.0, "E" to 0.0,"a" to 4.0, "b" to 3.0, "c" to 2.0, "d" to 1.0, "e" to 0.0)
     val totalCreditHours = allCourses.sumOf { it.creditHour }
     val totalPoints = allCourses.sumOf { it.creditHour * (gradePoints[it.letterGrade] ?: 0.0) }
 

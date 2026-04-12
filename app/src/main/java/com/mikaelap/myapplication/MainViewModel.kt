@@ -28,13 +28,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         courseRepository = CourseRepository(courseDao)
         allCourses = courseRepository.allCourses
         courseSearchResults = courseRepository.searchResults
-
-        preloadQuestions()
-
-        preloadQuestions()
     }
 
-    private fun preloadQuestions() {
+    fun loadQuestions() {
         seedQuestions.forEach { question ->
             repository.insertQuestion(question)
         }
