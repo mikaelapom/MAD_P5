@@ -1,6 +1,9 @@
 package com.mikaelap.myapplication
 
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -16,6 +19,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val courseRepository: CourseRepository
     val courseSearchResults: MutableLiveData<List<Course>>
 
+    var isDarkMode by mutableStateOf(true)
+
     init {
         val questionDb = TrivialQuestionRoomDatabase.getInstance(application)
         val dao = questionDb.TrivialQuestionDao()
@@ -28,6 +33,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         courseRepository = CourseRepository(courseDao)
         allCourses = courseRepository.allCourses
         courseSearchResults = courseRepository.searchResults
+    }
+
+    fun toggleDarkMode(enabled: Boolean) {
+        isDarkMode = enabled
     }
 
     fun loadQuestions() {

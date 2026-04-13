@@ -4,6 +4,7 @@ import android.R.id
 import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
+import android.widget.Switch
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -57,6 +58,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.ViewModel
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Switch
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -99,6 +101,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(viewModel: MainViewModel) {
     var selectedTabIndex by remember { mutableIntStateOf(2) }
     val tabs = listOf("Trivia", "Acad", "Home", "Events", "⚙\uFE0F") //list out each tab
+    var isDarkMode by remember { mutableStateOf(true) } //dark mode global
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -131,12 +134,12 @@ fun MainScreen(viewModel: MainViewModel) {
             .padding(innerPadding)
             .border(width = 2.dp, color = Color(0xFF1A2C57))) {
             when (selectedTabIndex) {
-                0 -> TriviaScreen(viewModel = viewModel)
-                1 -> AcadScreen(viewModel = viewModel)
+                0 -> TriviaScreen(viewModel = viewModel, isDarkMode)
+                1 -> AcadScreen(viewModel = viewModel, isDarkMode)
                 2 -> FameScreen()
-                3 -> EventScreen(modifier = Modifier
-                    .fillMaxSize())
-                4 -> SettingsScreen()
+                3 -> EventScreen(isDarkMode = isDarkMode)
+                4 -> SettingsScreen(isDarkMode = isDarkMode,
+                    onToggle = { isDarkMode = it })
             }
         }
     }
@@ -144,29 +147,53 @@ fun MainScreen(viewModel: MainViewModel) {
 
 //Tab Screens
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    isDarkMode: Boolean,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Color(0xFF1A2C57))
+            .background(backgroundColor)
     ) {
         TopBanner()
         SettingsBanner()
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Dark Mode",
+                color = textColor,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Switch(
+                checked = isDarkMode,
+                onCheckedChange = onToggle
+            )
+        }
+
         Text(
-            text = "Settings Screen",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 24.sp,
-                color = Color.White
-            ),
+            text = "Credits",
+            color = textColor,
+            fontSize = 24.sp,
             modifier = Modifier.padding(16.dp)
         )
     }
-
 }
 @Composable
 fun AcadScreen(
-    viewModel: MainViewModel,
+    viewModel: MainViewModel, isDarkMode: Boolean,
     modifier: Modifier = Modifier
 ) {
     val allCourses by viewModel.allCourses.observeAsState(listOf())
@@ -181,7 +208,8 @@ fun AcadScreen(
         GPAScreen(
             allCourses = allCourses,
             searchResults = searchResults,
-            viewModel = viewModel
+            viewModel = viewModel,
+            isDarkMode = isDarkMode
         )
     }
 }
@@ -190,8 +218,10 @@ fun AcadScreen(
 fun GPAScreen(
     allCourses: List<Course>,
     searchResults: List<Course>,
-    viewModel: MainViewModel
+    viewModel: MainViewModel, isDarkMode: Boolean
 ) {
+    val bgColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
     var courseName by remember { mutableStateOf("") }
     var courseCreditHour by remember { mutableStateOf("") }
     var letterGrade by remember {
@@ -243,7 +273,8 @@ fun GPAScreen(
     Column(
         horizontalAlignment = CenterHorizontally,
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
+            .background(bgColor)
     ) {
         com.mikaelap.myapplication.CustomTextField(
             title = "Course Name",
@@ -367,7 +398,7 @@ fun GPAScreen(
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {
-            Text("GPA: %.2f".format(calculatedGPA))
+            Text("GPA: %.2f".format(calculatedGPA), color = textColor)
         }
 
         LazyColumn(
@@ -379,7 +410,7 @@ fun GPAScreen(
                     head1 = "ID",
                     head2 = "Course",
                     head3 = "Credit Hour",
-                    head4 = "Letter Grade",
+                    head4 = "Letter Grade", isDarkMode = isDarkMode
                 )
             }
 
@@ -388,7 +419,7 @@ fun GPAScreen(
                     id = course.id,
                     name = course.courseName,
                     creditHour = course.creditHour,
-                    letterGrade = course.letterGrade
+                    letterGrade = course.letterGrade, isDarkMode = isDarkMode
                 )
             }
         }
@@ -396,7 +427,9 @@ fun GPAScreen(
 }
 
 @Composable
-fun EventScreen(modifier: Modifier = Modifier) {
+fun EventScreen(isDarkMode: Boolean,
+                modifier: Modifier = Modifier) {
+    val backgroundColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
     val eventsList = mutableListOf<schoolEvent>(testEvent1, testEvent2, testEvent3, testEvent4, testEvent5, testEvent6, testEvent7, testEvent8, testEvent9, testEvent10)
     Column(modifier = modifier.fillMaxSize()) {
         TopBanner()
@@ -406,33 +439,35 @@ fun EventScreen(modifier: Modifier = Modifier) {
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
-                .background(color = Color(0xFF1A2C57))
+                .background(backgroundColor)
         ) {
             item {
-                EventTab(eventsList, 0)
-                EventTab(eventsList, 1)
-                EventTab(eventsList, 2)
-                EventTab(eventsList, 3)
-                EventTab(eventsList, 4)
-                EventTab(eventsList, 5)
-                EventTab(eventsList, 6)
-                EventTab(eventsList, 7)
-                EventTab(eventsList, 8)
-                EventTab(eventsList, 9)
+                EventTab(eventsList, 0, isDarkMode)
+                EventTab(eventsList, 1, isDarkMode)
+                EventTab(eventsList, 2,isDarkMode)
+                EventTab(eventsList, 3, isDarkMode)
+                EventTab(eventsList, 4, isDarkMode)
+                EventTab(eventsList, 5, isDarkMode)
+                EventTab(eventsList, 6, isDarkMode)
+                EventTab(eventsList, 7, isDarkMode)
+                EventTab(eventsList, 8, isDarkMode)
+                EventTab(eventsList, 9, isDarkMode)
             }
         }
     }
 }
 
 @Composable
-fun EventTab(events: List<schoolEvent>, slotNumber: Int) {
+fun EventTab(events: List<schoolEvent>, slotNumber: Int, isDarkMode: Boolean) {
     var isExpanded by remember { mutableStateOf(false) }
+    val bg = if (isDarkMode) Color(0xFF1A2C57) else Color.White
+    val text1 = if (isDarkMode) Color.White else Color(0xFF1A2C57)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .background(Color(0xFF1A2C57))
+            .background(bg)
             .border(1.dp, Color(0xFFFBE475))
             .clickable { isExpanded = !isExpanded }
             .padding(12.dp)
@@ -444,7 +479,7 @@ fun EventTab(events: List<schoolEvent>, slotNumber: Int) {
         ) {
             Text(
                 text = events[slotNumber].title,
-                color = Color(0xAFFFFFFF),
+                color = text1,
                 fontFamily = TimesNewRoman,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -455,7 +490,7 @@ fun EventTab(events: List<schoolEvent>, slotNumber: Int) {
             )
             Text(
                 text = events[slotNumber].date,
-                color = Color(0xCCFFFFFF),
+                color = text1,
                 fontFamily = TimesNewRoman,
                 fontSize = 14.sp
             )
@@ -480,7 +515,7 @@ fun EventTab(events: List<schoolEvent>, slotNumber: Int) {
 
             Text(
                 text = events[slotNumber].shortDescription,
-                color = Color(0xAFFFFFFF),
+                color = text1,
                 fontFamily = TimesNewRoman,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
@@ -493,7 +528,7 @@ fun EventTab(events: List<schoolEvent>, slotNumber: Int) {
 
             Text(
                 text = events[slotNumber].longDescription,
-                color = Color(0xAFFFFFFF),
+                color = text1,
                 fontFamily = TimesNewRoman,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
@@ -527,8 +562,11 @@ fun FameScreen(modifier: Modifier = Modifier) {
 @Composable
 fun TriviaScreen(
     viewModel: MainViewModel,
+    isDarkMode: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val bgColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
     val questionsFromDb by viewModel.allQuestions.observeAsState(emptyList())
     
     var numQuestionsInput by remember { mutableStateOf("") }
@@ -542,7 +580,9 @@ fun TriviaScreen(
     val shuffledAnswersMap = remember { mutableStateMapOf<Int, List<String>>() }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(bgColor)
     ) {
         TopBanner()
         TriviaBanner()
@@ -631,7 +671,7 @@ fun TriviaScreen(
                             selected = (userSelections[questionIndex] == answer),
                             onClick = { userSelections[questionIndex] = answer },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = Color(0xFF1A2C57),
+                                selectedColor = textColor,
                                 unselectedColor = Color(0xFF97CDEC)
                             )
                         )
@@ -639,7 +679,7 @@ fun TriviaScreen(
                             text = answer,
                             fontFamily = TimesNewRoman,
                             fontSize = 18.sp,
-                            color = Color(0xFF1A2C57),
+                            color = textColor,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -1232,17 +1272,19 @@ private fun calculateGPA2(allCourses: List<Course>): Double {
 }
 
 @Composable
-fun TitleRow(head1: String, head2: String, head3: String, head4: String) {
+fun TitleRow(head1: String, head2: String, head3: String, head4: String, isDarkMode: Boolean) {
+    val bgColor = if (isDarkMode) Color(0xFF1A2C57) else Color(0xFFFBE475)
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
     Row(
         modifier = Modifier
-            .background(Color(0xFFFBE475))
+            .background(bgColor)
             //.border(width = 0.5.dp, Color.Black)
             .fillMaxWidth()
             .padding(5.dp)
     ) {
         val timesNewRomanStyle = TextStyle(fontFamily = com.mikaelap.myapplication.TimesNewRoman,
             fontSize = 18.sp,
-            color = Color(0xFF1A2C57)
+            color = textColor
         )
 
         Text(head1, style = timesNewRomanStyle,
@@ -1259,17 +1301,18 @@ fun TitleRow(head1: String, head2: String, head3: String, head4: String) {
 }
 
 @Composable
-fun CourseRow(id: Int, name: String, creditHour: Int, letterGrade: String) {
+fun CourseRow(id: Int, name: String, creditHour: Int, letterGrade: String, isDarkMode: Boolean) {
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp)
     ) {
-        Text(id.toString(), modifier = Modifier
+        Text(id.toString(), color = textColor, modifier = Modifier
             .weight(0.1f))
-        Text(name, modifier = Modifier.weight(0.2f))
-        Text(creditHour.toString(), modifier = Modifier.weight(0.2f))
-        Text(letterGrade, modifier = Modifier.weight(0.2f))
+        Text(name, color = textColor, modifier = Modifier.weight(0.2f))
+        Text(creditHour.toString(), color = textColor, modifier = Modifier.weight(0.2f))
+        Text(letterGrade, color = textColor, modifier = Modifier.weight(0.2f))
     }
 }
 
