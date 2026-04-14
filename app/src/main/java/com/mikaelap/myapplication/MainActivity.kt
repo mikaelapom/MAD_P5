@@ -1,10 +1,7 @@
 package com.mikaelap.myapplication
 
-import android.R.id
-import android.annotation.SuppressLint
 import android.app.Application
 import android.os.Bundle
-import android.widget.Switch
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -46,7 +43,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -260,7 +256,7 @@ fun GPAScreen(
     val onLetterGradeTextChange = { text: String ->
         val upper = text.uppercase()
 
-        if (upper.length <= 1 && upper.all { it in "ABCDE" }) {
+        if (upper.length <= 2 && upper.matches(Regex("^[A-E]?[+-]?$"))) {
             letterGrade = upper
             letterGradeError = false
         } else {
@@ -322,7 +318,8 @@ fun GPAScreen(
                         courseNameErrorMessage = "Please enter a course name"
                     }
                     creditHourError = courseCreditHour.isBlank() || !courseCreditHour.all { it.isDigit() }
-                    letterGradeError = letterGrade.isBlank() || !(letterGrade.length == 1 && letterGrade.all { it in "ABCDE" })
+                    letterGradeError = letterGrade.isBlank() ||
+                            !(letterGrade.matches(Regex("^[A-E][+-]?$")))
 
                     //check all possible errors
                     if (!courseNameError && !creditHourError && !letterGradeError) {
@@ -596,6 +593,12 @@ fun TriviaScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             )
             {
+                InfoBox(
+                    title = "Welcome to Smith College Trivia",
+                    description = "Test your knowledge on fun facts, history, and student life at Smith College. Choose how many questions you'd like and see how well you score!",
+                    isDarkMode = isDarkMode
+                )
+
                 OutlinedTextField(
                     value = numQuestionsInput,
                     onValueChange = { 
@@ -767,6 +770,46 @@ fun TriviaScreen(
                     ) { Text("Next", fontSize = 14.sp) }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun InfoBox(
+    title: String,
+    description: String,
+    isDarkMode: Boolean
+) {
+    val borderColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
+    //val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .border(2.dp, borderColor)
+            .background(Color(0xFFFBE475))
+            .padding(12.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Text(
+                text = title,
+                fontFamily = TimesNewRoman,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+                //color = textColor
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = description,
+                fontFamily = TimesNewRoman,
+                fontSize = 14.sp,
+                //color = textColor,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -1116,7 +1159,19 @@ fun FactoidBoxes(
 private fun calculateGPA2(allCourses: List<Course>): Double {
     // Dummy data for illustration. Replace with actual data retrieval and calculation logic
 
-    val gradePoints = mapOf("A" to 4.0, "B" to 3.0, "C" to 2.0, "D" to 1.0, "E" to 0.0,"a" to 4.0, "b" to 3.0, "c" to 2.0, "d" to 1.0, "e" to 0.0)
+    val gradePoints = mapOf(
+        "A+" to 4.0, "A" to 4.0, "A-" to 3.7,
+        "B+" to 3.3, "B" to 3.0, "B-" to 2.7,
+        "C+" to 2.3, "C" to 2.0, "C-" to 1.7,
+        "D+" to 1.3, "D" to 1.0, "D-" to 0.7,
+        "E" to 0.0,
+
+        "a+" to 4.0, "a" to 4.0, "a-" to 3.7,
+        "b+" to 3.3, "b" to 3.0, "b-" to 2.7,
+        "c+" to 2.3, "c" to 2.0, "c-" to 1.7,
+        "d+" to 1.3, "d" to 1.0, "d-" to 0.7,
+        "e" to 0.0
+    )
     val totalCreditHours = allCourses.sumOf { it.creditHour }
     val totalPoints = allCourses.sumOf { it.creditHour * (gradePoints[it.letterGrade] ?: 0.0) }
 
