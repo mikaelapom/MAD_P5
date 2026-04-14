@@ -53,6 +53,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.ViewModel
@@ -160,8 +161,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        TopBanner()
-        SettingsBanner()
+        Banner("Settings")
 
         Row(
             modifier = Modifier
@@ -202,8 +202,7 @@ fun AcadScreen(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        TopBanner()
-        FameBanner()
+        Banner("GPA Calculator")
 
         GPAScreen(
             allCourses = allCourses,
@@ -282,7 +281,7 @@ fun GPAScreen(
             onTextChange = onCourseTextChange,
             keyboardType = KeyboardType.Text,
             isError = courseNameError,
-            errorMessage = courseNameErrorMessage
+            errorMessage = courseNameErrorMessage, isDarkMode = isDarkMode
 //            Modifier.border(width = 0.5.dp, Color(0xFF1A2C57))
         )
 
@@ -292,7 +291,7 @@ fun GPAScreen(
             onTextChange = onCreditHourTextChange,
             keyboardType = KeyboardType.Number,
             isError = creditHourError,
-            errorMessage = "Please enter a number"
+            errorMessage = "Please enter a number", isDarkMode = isDarkMode
         )
 
 
@@ -302,7 +301,8 @@ fun GPAScreen(
             onTextChange = onLetterGradeTextChange,
             keyboardType = KeyboardType.Text,
             isError = letterGradeError,
-            errorMessage = "Enter A, B, C, D, or E"
+            errorMessage = "Enter A, B, C, D, or E",
+            isDarkMode = isDarkMode
         )
 
 
@@ -432,8 +432,7 @@ fun EventScreen(isDarkMode: Boolean,
     val backgroundColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
     val eventsList = mutableListOf<schoolEvent>(testEvent1, testEvent2, testEvent3, testEvent4, testEvent5, testEvent6, testEvent7, testEvent8, testEvent9, testEvent10)
     Column(modifier = modifier.fillMaxSize()) {
-        TopBanner()
-        EventBanner()
+        Banner("Student Life & Events")
         ScrollBanner()
 
         LazyColumn(
@@ -552,8 +551,7 @@ fun FameScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        TopBanner()
-        FameBanner()
+        Banner("Home: Fame & Achievements")
         Factoids(onFactoidClick = { selectedFactoid = it })
     }
 }
@@ -579,13 +577,16 @@ fun TriviaScreen(
     val userSelections = remember { mutableStateMapOf<Int, String>() }
     val shuffledAnswersMap = remember { mutableStateMapOf<Int, List<String>>() }
 
+    LaunchedEffect(Unit) {
+        viewModel.loadQuestions()
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(bgColor)
     ) {
-        TopBanner()
-        TriviaBanner()
+        Banner("Trivia Questionairre")
 
         if (!isStarted) {
             Column(
@@ -593,19 +594,8 @@ fun TriviaScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Button(
-                    onClick = { viewModel.loadQuestions() },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF97CDEC),
-                        contentColor = Color(0xFF1A2C57)
-                    )
-                ) {
-                    Text("Load")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+            )
+            {
                 OutlinedTextField(
                     value = numQuestionsInput,
                     onValueChange = { 
@@ -619,10 +609,24 @@ fun TriviaScreen(
                     label = { Text("Number of Questions") },
                     isError = inputError,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+
+                    textStyle = TextStyle(color = textColor),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = textColor,
+                        unfocusedTextColor = textColor,
+
+                        focusedBorderColor = if (isDarkMode) Color.White else Color.Gray,
+                        unfocusedBorderColor = if (isDarkMode) Color.White else Color.Gray,
+
+                        focusedLabelColor = textColor,
+                        unfocusedLabelColor = textColor,
+
+                        cursorColor = textColor
+                    )
                 )
                 if (inputError) {
-                    Text("Enter a number between 1 and 10", color = Color.Red, fontSize = 12.sp)
+                    Text("Enter a number between 1 and 10", color = textColor, fontSize = 12.sp)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -646,7 +650,10 @@ fun TriviaScreen(
                     enabled = numQuestionsInput.isNotEmpty() && !inputError && questionsFromDb.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF97CDEC),
-                        contentColor = Color(0xFF1A2C57)
+                        contentColor = Color(0xFF1A2C57),
+
+                        disabledContainerColor = if (isDarkMode) Color(0xFF4A6A85) else Color.LightGray,
+                        disabledContentColor = if (isDarkMode) Color.White.copy(alpha = 0.6f) else Color.DarkGray
                     )
                 ) {
                     Text("Go")
@@ -693,7 +700,7 @@ fun TriviaScreen(
                 val correctCount = activeQuestions.filterIndexed { index, q ->
                     userSelections[index] == q.correct
                 }.size
-                ScoreText("${correctCount}/${activeQuestions.size}")
+                ScoreText("${correctCount}/${activeQuestions.size}", isDarkMode)
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -708,8 +715,10 @@ fun TriviaScreen(
                     onClick = { showGrade = true },
                     enabled = userSelections.size == activeQuestions.size,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (userSelections.size == activeQuestions.size) Color(0xFF97CDEC) else Color.Gray,
-                        contentColor = Color(0xFF1A2C57)
+                        containerColor = Color(0xFF97CDEC),
+                        contentColor = Color(0xFF1A2C57),
+                        disabledContainerColor = if (isDarkMode) Color(0xFF4A6A85) else Color.LightGray,
+                        disabledContentColor = if (isDarkMode) Color.White.copy(alpha = 0.6f) else Color.DarkGray
                     ),
                     shape = CircleShape,
                     modifier = Modifier.width(150.dp).height(48.dp)
@@ -729,7 +738,12 @@ fun TriviaScreen(
                     Button(
                         onClick = { if (questionIndex > 0) questionIndex-- },
                         enabled = questionIndex > 0,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC), contentColor = Color(0xFF1A2C57)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF97CDEC),
+                            contentColor = Color(0xFF1A2C57),
+                            disabledContainerColor = if (isDarkMode) Color(0xFF4A6A85) else Color.LightGray,
+                            disabledContentColor = if (isDarkMode) Color.White.copy(alpha = 0.6f) else Color.DarkGray
+                        ),
                         shape = CircleShape, modifier = Modifier.size(68.dp),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                     ) { Text("Back", fontSize = 14.sp) }
@@ -758,7 +772,8 @@ fun TriviaScreen(
 }
 
 @Composable
-fun ScoreText(score: String) {
+fun ScoreText(score: String, isDarkMode: Boolean) {
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Text(
             text = "Score: $score",
@@ -766,7 +781,7 @@ fun ScoreText(score: String) {
                 fontFamily = TimesNewRoman,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A2C57)
+                color = textColor
             )
         )
     }
@@ -802,114 +817,55 @@ fun CustomDialog(
 }
 
 //Banners
-@Preview(showBackground = true)
 @Composable
-fun TriviaBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Trivia Questionnaire",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
+fun Banner(
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
 
-@Preview(showBackground = true)
-@Composable
-fun FameBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Fame & Achievements",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun SettingsBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Settings",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun EventBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Events & Student Life",
-            style = TextStyle(
-                fontFamily = TimesNewRoman,
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun TopBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .background(Color(0xFFFBE475)),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 8.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp)
+                .background(Color(0xFFFBE475)),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.smith),
-                contentDescription = "Smith College Logo",
-                modifier = Modifier
-                    .size(45.dp)
-                    .padding(end = 8.dp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.smith),
+                    contentDescription = "Smith College Logo",
+                    modifier = Modifier
+                        .size(45.dp)
+                        .padding(end = 8.dp)
+                )
 
+                Text(
+                    text = "Smith College",
+                    style = TextStyle(
+                        fontFamily = TimesNewRoman,
+                        fontSize = 24.sp,
+                        color = Color(0xFF1A2C57)
+                    )
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(30.dp)
+                .background(Color(0xFFFBE475)),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
-                text = "Smith College",
+                text = title,
                 style = TextStyle(
                     fontFamily = TimesNewRoman,
-                    fontSize = 24.sp,
+                    fontSize = 18.sp,
                     color = Color(0xFF1A2C57)
                 )
             )
@@ -935,109 +891,6 @@ fun ScrollBanner() {
                 color = Color.White,
             )
         )
-    }
-}
-
-//Trivia Functions
-@Composable
-fun BackForwardReset(
-    currentIndex: Int,
-    total: Int,
-    onBack: () -> Unit,
-    onNext: () -> Unit,
-    onReset: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(75.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-
-        Button(
-            onClick = onBack,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            enabled = currentIndex > 0,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Back", fontSize = 14.sp)
-        }
-
-        Button(
-            onClick = onReset,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Reset", fontSize = 14.sp)
-        }
-
-        Button(
-            onClick = onNext,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            enabled = currentIndex < total - 1,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Next", fontSize = 14.sp)
-        }
-    }
-}
-
-@SuppressLint("DefaultLocale")
-@Composable
-fun Score(questionsCorrect: Double, grade: Double) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(24.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "Grade:  ${questionsCorrect.toInt()}/10",
-            fontFamily = TimesNewRoman,
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-
-@Composable
-fun AnswerButtons(
-    question: TrivialQuestion,
-    questionIndex: Int,
-    answered: MutableList<Boolean>,
-    onAnswered: (isCorrect: Boolean) -> Unit
-) {
-    val originalList = question.getShuffledAnswers()
-    Column {
-        AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("B", originalList[1], questionIndex, 1, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("C", originalList[2], questionIndex, 2, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("D", originalList[3], questionIndex, 3, originalList, question, answered, onAnswered)
     }
 }
 
@@ -1260,7 +1113,6 @@ fun FactoidBoxes(
 }
 
 //GPA Calculator
-// GPA calculation functionality
 private fun calculateGPA2(allCourses: List<Course>): Double {
     // Dummy data for illustration. Replace with actual data retrieval and calculation logic
 
@@ -1325,8 +1177,10 @@ fun CustomTextField(
     keyboardType: KeyboardType,
     modifier: Modifier = Modifier,
     isError: Boolean = false,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    isDarkMode: Boolean
 ) {
+    val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
     Column {
         OutlinedTextField(
             value = textState,
@@ -1338,7 +1192,20 @@ fun CustomTextField(
             modifier = modifier.padding(10.dp),
             textStyle = TextStyle(
                 fontWeight = FontWeight.Bold,
-                fontSize = 30.sp
+                fontSize = 30.sp,
+                color = textColor
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = textColor,
+                unfocusedTextColor = textColor,
+
+                focusedBorderColor = if (isDarkMode) Color.White else Color.Gray,
+                unfocusedBorderColor = if (isDarkMode) Color.White else Color.Gray,
+
+                focusedLabelColor = textColor,
+                unfocusedLabelColor = textColor,
+
+                cursorColor = textColor
             )
         )
 
@@ -1353,8 +1220,6 @@ fun CustomTextField(
     }
 }
 
-
-
 //creates view model
 class MainViewModelFactory(val application: Application) :
     ViewModelProvider.Factory {
@@ -1362,3 +1227,107 @@ class MainViewModelFactory(val application: Application) :
         return MainViewModel(application) as T
     }
 }
+
+/*
+//Trivia Functions
+@Composable
+fun BackForwardReset(
+    currentIndex: Int,
+    total: Int,
+    onBack: () -> Unit,
+    onNext: () -> Unit,
+    onReset: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(75.dp)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+
+        Button(
+            onClick = onBack,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(68.dp),
+            enabled = currentIndex > 0,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text("Back", fontSize = 14.sp)
+        }
+
+        Button(
+            onClick = onReset,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(68.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text("Reset", fontSize = 14.sp)
+        }
+
+        Button(
+            onClick = onNext,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF97CDEC),
+                contentColor = Color(0xFF1A2C57)
+            ),
+            shape = CircleShape,
+            modifier = Modifier.size(68.dp),
+            enabled = currentIndex < total - 1,
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+        ) {
+            Text("Next", fontSize = 14.sp)
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+fun Score(questionsCorrect: Double, grade: Double) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(24.dp)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Grade:  ${questionsCorrect.toInt()}/10",
+            fontFamily = TimesNewRoman,
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A2C57)
+            )
+        )
+    }
+}
+
+@Composable
+fun AnswerButtons(
+    question: TrivialQuestion,
+    questionIndex: Int,
+    answered: MutableList<Boolean>,
+    onAnswered: (isCorrect: Boolean) -> Unit
+) {
+    val originalList = question.getShuffledAnswers()
+    Column {
+        AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("B", originalList[1], questionIndex, 1, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("C", originalList[2], questionIndex, 2, originalList, question, answered, onAnswered)
+        Spacer(modifier = Modifier.height(6.dp))
+        AnswerRow("D", originalList[3], questionIndex, 3, originalList, question, answered, onAnswered)
+    }
+}
+*/
