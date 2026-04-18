@@ -151,6 +151,8 @@ fun SettingsScreen(
 ) {
     val backgroundColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
     val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
+    val yellow = Color(0xFFFBE475)
+    val darkBlue = Color(0xFF1A2C57)
     
     var selectedCredit by remember { mutableStateOf<Pair<String, String>?>(null) }
 
@@ -162,14 +164,14 @@ fun SettingsScreen(
                     text = selectedCredit!!.first,
                     fontFamily = TimesNewRoman,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A2C57)
+                    color = darkBlue
                 ) 
             },
             text = { 
                 Text(
                     text = selectedCredit!!.second,
                     fontFamily = TimesNewRoman,
-                    color = Color(0xFF1A2C57)
+                    color = darkBlue
                 ) 
             },
             confirmButton = {
@@ -177,7 +179,7 @@ fun SettingsScreen(
                     onClick = { selectedCredit = null },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF97CDEC),
-                        contentColor = Color(0xFF1A2C57)
+                        contentColor = darkBlue
                     )
                 ) {
                     Text("Close")
@@ -193,80 +195,133 @@ fun SettingsScreen(
     ) {
         Banner("Settings")
 
-        Row(
+        LazyColumn(
             modifier = Modifier
+                .weight(1f)
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Dark Mode",
-                color = textColor,
-                fontFamily = TimesNewRoman,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Dark Mode",
+                        color = textColor,
+                        fontFamily = TimesNewRoman,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
-            Switch(
-                checked = isDarkMode,
-                onCheckedChange = onToggle
-            )
+                    Switch(
+                        checked = isDarkMode,
+                        onCheckedChange = onToggle
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                Text(
+                    text = "Credits",
+                    color = textColor,
+                    fontFamily = TimesNewRoman,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Yellow border around the credits area
+                Column(
+                    modifier = Modifier
+                        .border(2.dp, yellow)
+                        .padding(8.dp)
+                ) {
+                    val credits = listOf(
+                        Pair("Mikaela Pomfret", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
+                        Pair("Quetzaly Paz-Mondesi", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
+                        Pair("Diana Livengood", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex")
+                    )
+
+                    credits.forEach { credit ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .background(yellow) // Always yellow
+                                .border(1.dp, darkBlue)
+                                .clickable { selectedCredit = credit }
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = credit.first,
+                                color = darkBlue, // Dark blue font for yellow background
+                                fontFamily = TimesNewRoman,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            item {
+                Text(
+                    text = "Important Dates",
+                    color = textColor,
+                    fontFamily = TimesNewRoman,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Important dates section with yellow border
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(2.dp, yellow)
+                        .padding(12.dp)
+                ) {
+                    val dates = listOf(
+                        "Registration Period: Aug 15 - Sept 1",
+                        "First Day of Classes: Sept 4, 2024",
+                        "Add/Drop Deadline: Sept 18, 2024",
+                        "Midterm Exams: Oct 20 - Oct 25",
+                        "Thanksgiving Break: Nov 27 - Nov 29",
+                        "Last Day of Classes: Dec 13, 2024",
+                        "Final Exams: Dec 16 - Dec 20"
+                    )
+                    
+                    dates.forEach { dateText ->
+                        Text(
+                            text = "• $dateText",
+                            color = textColor,
+                            fontFamily = TimesNewRoman,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(vertical = 2.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+            }
         }
 
+        // Version Number at the very bottom, centered
         Text(
             text = "Version: 3.1.2",
             color = textColor,
             fontFamily = TimesNewRoman,
             fontSize = 16.sp,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Credits",
-            color = textColor,
-            fontFamily = TimesNewRoman,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val credits = listOf(
-            Pair("Mikaela Pomfret", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
-            Pair("Quetzaly Paz-Mondesi", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
-            Pair("Diana Livengood", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex")
-        )
-
-        LazyColumn(
+            textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(credits) { credit ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(if (isDarkMode) Color(0xFF1A2C57) else Color(0xFFFBE475))
-                        .border(2.dp, if (isDarkMode) Color.White else Color(0xFF1A2C57))
-                        .clickable { selectedCredit = credit }
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = credit.first,
-                        color = if (isDarkMode) Color.White else Color(0xFF1A2C57),
-                        fontFamily = TimesNewRoman,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
+                .padding(vertical = 16.dp)
+        )
     }
 }
 
