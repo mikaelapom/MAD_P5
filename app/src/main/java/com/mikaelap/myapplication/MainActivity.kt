@@ -151,6 +151,40 @@ fun SettingsScreen(
 ) {
     val backgroundColor = if (isDarkMode) Color(0xFF1A2C57) else Color.White
     val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
+    
+    var selectedCredit by remember { mutableStateOf<Pair<String, String>?>(null) }
+
+    if (selectedCredit != null) {
+        AlertDialog(
+            onDismissRequest = { selectedCredit = null },
+            title = { 
+                Text(
+                    text = selectedCredit!!.first,
+                    fontFamily = TimesNewRoman,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1A2C57)
+                ) 
+            },
+            text = { 
+                Text(
+                    text = selectedCredit!!.second,
+                    fontFamily = TimesNewRoman,
+                    color = Color(0xFF1A2C57)
+                ) 
+            },
+            confirmButton = {
+                Button(
+                    onClick = { selectedCredit = null },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF97CDEC),
+                        contentColor = Color(0xFF1A2C57)
+                    )
+                ) {
+                    Text("Close")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -169,6 +203,7 @@ fun SettingsScreen(
             Text(
                 text = "Dark Mode",
                 color = textColor,
+                fontFamily = TimesNewRoman,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -180,13 +215,61 @@ fun SettingsScreen(
         }
 
         Text(
+            text = "Version: 3.1.2",
+            color = textColor,
+            fontFamily = TimesNewRoman,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
             text = "Credits",
             color = textColor,
+            fontFamily = TimesNewRoman,
             fontSize = 24.sp,
-            modifier = Modifier.padding(16.dp)
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val credits = listOf(
+            Pair("Mikaela Pomfret", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
+            Pair("Quetzaly Paz-Mondesi", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
+            Pair("Diana Livengood", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex")
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(credits) { credit ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(if (isDarkMode) Color(0xFF1A2C57) else Color(0xFFFBE475))
+                        .border(2.dp, if (isDarkMode) Color.White else Color(0xFF1A2C57))
+                        .clickable { selectedCredit = credit }
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = credit.first,
+                        color = if (isDarkMode) Color.White else Color(0xFF1A2C57),
+                        fontFamily = TimesNewRoman,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
     }
 }
+
 @Composable
 fun AcadScreen(
     viewModel: MainViewModel, isDarkMode: Boolean,
@@ -1282,107 +1365,3 @@ class MainViewModelFactory(val application: Application) :
         return MainViewModel(application) as T
     }
 }
-
-/*
-//Trivia Functions
-@Composable
-fun BackForwardReset(
-    currentIndex: Int,
-    total: Int,
-    onBack: () -> Unit,
-    onNext: () -> Unit,
-    onReset: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(75.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-
-        Button(
-            onClick = onBack,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            enabled = currentIndex > 0,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Back", fontSize = 14.sp)
-        }
-
-        Button(
-            onClick = onReset,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Reset", fontSize = 14.sp)
-        }
-
-        Button(
-            onClick = onNext,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(68.dp),
-            enabled = currentIndex < total - 1,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text("Next", fontSize = 14.sp)
-        }
-    }
-}
-
-@SuppressLint("DefaultLocale")
-@Composable
-fun Score(questionsCorrect: Double, grade: Double) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(24.dp)
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "Grade:  ${questionsCorrect.toInt()}/10",
-            fontFamily = TimesNewRoman,
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
-@Composable
-fun AnswerButtons(
-    question: TrivialQuestion,
-    questionIndex: Int,
-    answered: MutableList<Boolean>,
-    onAnswered: (isCorrect: Boolean) -> Unit
-) {
-    val originalList = question.getShuffledAnswers()
-    Column {
-        AnswerRow("A", originalList[0], questionIndex, 0, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("B", originalList[1], questionIndex, 1, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("C", originalList[2], questionIndex, 2, originalList, question, answered, onAnswered)
-        Spacer(modifier = Modifier.height(6.dp))
-        AnswerRow("D", originalList[3], questionIndex, 3, originalList, question, answered, onAnswered)
-    }
-}
-*/
