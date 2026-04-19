@@ -4,6 +4,7 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,6 +22,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -1149,105 +1152,96 @@ fun AnswerRow(label: String,
 }
 
 //Fame Functions
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
-
+    val pagerState = rememberPagerState(pageCount = { 6 })
     Column {
 
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            FactoidBoxes(
-                modifier = Modifier.weight(1f),
-                text = "National Ranking & Academics",
-                backgroundImage = R.drawable.academics,
-                onClick = {
-                    onFactoidClick(
-                        FactoidData(
-                            "National Ranking & Academics",
-                            "Smith College is ranked #13 in National Liberal Arts Colleges and #10 in Best Value Schools. Of Forbes' America's Top College's ranking which accounts for 500 military academies, national universities, and liberal arts colleges, Smith rests at an impressive 135th place. Academics are taken very seriously at Smith, with an emphasis on research opportunities, experiental learning, and a vast selection of majors. The Ada Comstock Scholars Program also encourages students of nontraditional college ages to complete their unfinished degrees. Smith was also the first historically Women's college to offer an undergraduate degree in Engineering."
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize() // Make it take the whole screen
+        ) { page ->
+            when (page) {
+                0 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "National Ranking & Academics",
+                    backgroundImage = R.drawable.rankings,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "National Ranking & Academics",
+                                "Smith College is ranked #13 in National Liberal Arts Colleges and #10 in Best Value Schools. Of Forbes' America's Top College's ranking which accounts for 500 military academies, national universities, and liberal arts colleges, Smith rests at an impressive 135th place. Academics are taken very seriously at Smith, with an emphasis on research opportunities, experiental learning, and a vast selection of majors. The Ada Comstock Scholars Program also encourages students of nontraditional college ages to complete their unfinished degrees. Smith was also the first historically Women's college to offer an undergraduate degree in Engineering."
+                            )
                         )
-                    )
-                }
-            )
-
-            FactoidBoxes(
-                modifier = Modifier.weight(1f),
-                text = "Sustainability",
-                backgroundImage = R.drawable.smithpark,
-                onClick = {
-                    onFactoidClick(
-                        FactoidData(
-                            "Sustainability",
-                            "Smith College excels at sustainability, earning an A- on the \"College Sustainability Card 2010\". As of 2022, Smith is in the process of working on a Geothermal Energy System to reduce carbon emissions and reach carbon neutrality by 2030. Additionally, Smith's Bechtel Environmental Classroom uses compostable toilets, solar panels, and net-zero energy use. Students doing fieldwork in the classroom are working to save the Magnolia Fraseri species, earning Smith the name of \"species champion\" by the U.S department of agriculture."
+                    }
+                )
+                1 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Sustainability",
+                    backgroundImage = R.drawable.gardens,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Sustainability",
+                                "Smith College excels at sustainability, earning an A- on the \"College Sustainability Card 2010\". As of 2022, Smith is in the process of working on a Geothermal Energy System to reduce carbon emissions and reach carbon neutrality by 2030. Additionally, Smith's Bechtel Environmental Classroom uses compostable toilets, solar panels, and net-zero energy use. Students doing fieldwork in the classroom are working to save the Magnolia Fraseri species, earning Smith the name of \"species champion\" by the U.S department of agriculture."
+                            )
                         )
-                    )
-                }
-            )
-
-            FactoidBoxes(
-                modifier = Modifier.weight(1f),
-                text = "Athletics",
-                backgroundImage = R.drawable.athletics,
-                onClick = {
-                    onFactoidClick(
-                        FactoidData(
-                            "Athletics",
-                            "First historically women's college to join the NCAA with it's sports teams being called the \"Smith Bears\". IN fact, women's basketball started with Smith College. Only two years after the invention of basketball, Smith's athletic director adapted the sport for women. Smith has 11 varsity teams and 3 were recently NEWMAC Champions. Smith offers students and teams its own award, the Powerhouse Award, for excellent work."
+                    }
+                )
+                2 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Athletics",
+                    backgroundImage = R.drawable.athletics,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Athletics",
+                                "First historically women's college to join the NCAA with it's sports teams being called the \"Smith Bears\". IN fact, women's basketball started with Smith College. Only two years after the invention of basketball, Smith's athletic director adapted the sport for women. Smith has 11 varsity teams and 3 were recently NEWMAC Champions. Smith offers students and teams its own award, the Powerhouse Award, for excellent work."
+                            )
                         )
-                    )
-                }
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            FactoidBoxes(
-                modifier = Modifier.weight(1f),
-                text = "Sylvia Plath",
-                backgroundImage = R.drawable.sylviaplath,
-                onClick = {
-                    onFactoidClick(
-                        FactoidData(
-                            "Sylvia Plath",
-                            "A renowned poet and novelist who graduated from smith in 1951 with a degree in English. She was on the Editorial Board of the Campus Cat, editor of the Smith Review, and secretary of the Honor Board. She also won two Smith prizes for her poetry. Plath went on to publish an abundance of wildly famous works such as The Bell Jar, The Colossus and Other Poems, and Ariel. In 1982, she won the Posthumus Pulitzer Prize for her work \"The Collected Poems\"."
+                    }
+                )
+                3 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Sylvia Plath",
+                    backgroundImage = R.drawable.sylviaplath,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Sylvia Plath",
+                                "A renowned poet and novelist who graduated from smith in 1951 with a degree in English. She was on the Editorial Board of the Campus Cat, editor of the Smith Review, and secretary of the Honor Board. She also won two Smith prizes for her poetry. Plath went on to publish an abundance of wildly famous works such as The Bell Jar, The Colossus and Other Poems, and Ariel. In 1982, she won the Posthumus Pulitzer Prize for her work \"The Collected Poems\"."
+                            )
                         )
-                    )
-                }
-            )
-
-            FactoidBoxes(
-                modifier = Modifier.weight(1f),
-                text = "Julia Child",
-                backgroundImage = R.drawable.juliachild,
-                onClick = {
-                    onFactoidClick(
-                        FactoidData(
-                            "Julia Child",
-                            "Culinary icon who graduated from Smith in 1934 with a degree in History. While attending, she played basketball, served on the Student Council, and took part in the Dramatics Association. She went on to finish her studies at Le Cordon Bleu in Paris, eventually cofounding L'ecole des trois gourmandes, and experienced massive success and fame from her PBS show The French Chef. In fact, Julia Child Day is celebrated at Smith College with a panel discussion of food, pleasure, and culture."
+                    }
+                )
+                4 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Julia Child",
+                    backgroundImage = R.drawable.juliachild,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Julia Child",
+                                "Culinary icon who graduated from Smith in 1934 with a degree in History. While attending, she played basketball, served on the Student Council, and took part in the Dramatics Association. She went on to finish her studies at Le Cordon Bleu in Paris, eventually cofounding L'ecole des trois gourmandes, and experienced massive success and fame from her PBS show The French Chef. In fact, Julia Child Day is celebrated at Smith College with a panel discussion of food, pleasure, and culture."
+                            )
                         )
-                    )
-                }
-            )
-
-            FactoidBoxes(
-                modifier = Modifier.weight(1f),
-                text = "Nancy Reagan",
-                backgroundImage = R.drawable.nancyreagan,
-                onClick = {
-                    onFactoidClick(
-                        FactoidData(
-                            "Nancy Reagan",
-                            "Former first lady of the U.S who graduated from Smith with a degree in Drama and English in 1943. Before becoming first lady, she pursued her acting career, appearing in Donovan's Brain, The Next Voice You Hear, and Night Into Morning. As first lady, she launched the \"Just Say No\" campaign to oppose drug use in America's youth, The Foster Grandparent's Program to connect senior citizens to children with disabilities, and actively supported Vietnam War veterans through donations and hospital visitations."
+                    }
+                )
+                5 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Nancy Reagan",
+                    backgroundImage = R.drawable.nancyreagan,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Nancy Reagan",
+                                "Former first lady of the U.S who graduated from Smith with a degree in Drama and English in 1943. Before becoming first lady, she pursued her acting career, appearing in Donovan's Brain, The Next Voice You Hear, and Night Into Morning. As first lady, she launched the \"Just Say No\" campaign to oppose drug use in America's youth, The Foster Grandparent's Program to connect senior citizens to children with disabilities, and actively supported Vietnam War veterans through donations and hospital visitations."
+                            )
                         )
-                    )
-                }
-            )
+                    }
+                )
+            }
         }
     }
 }
@@ -1286,7 +1280,7 @@ fun FactoidBoxes(
             text = text,
             color = Color(0xAFFFFFFF),
             fontFamily = TimesNewRoman,
-            fontSize = 18.sp,
+            fontSize = 24.sp,
             textAlign = TextAlign.Center
         )
 
