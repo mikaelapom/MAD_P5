@@ -4,6 +4,10 @@ import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -59,6 +63,7 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Switch
+import kotlinx.coroutines.delay
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -599,6 +604,12 @@ fun EventTab(events: List<schoolEvent>, slotNumber: Int, isDarkMode: Boolean) {
     var isExpanded by remember { mutableStateOf(false) }
     val bg = if (isDarkMode) Color(0xFF1A2C57) else Color.White
     val text1 = if (isDarkMode) Color.White else Color(0xFF1A2C57)
+    
+    val shortDescription = if (isExpanded) {
+        events[slotNumber].shortDescription.replace("▼", "▲")
+    } else {
+        events[slotNumber].shortDescription
+    }
 
     Column(
         modifier = Modifier
@@ -651,7 +662,7 @@ fun EventTab(events: List<schoolEvent>, slotNumber: Int, isDarkMode: Boolean) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = events[slotNumber].shortDescription,
+                text = shortDescription,
                 color = text1,
                 fontFamily = TimesNewRoman,
                 fontSize = 16.sp,
@@ -709,7 +720,7 @@ fun TriviaScreen(
     var isStarted by remember { mutableStateOf(false) }
     var activeQuestions by remember { mutableStateOf<List<TrivialQuestion>>(emptyList()) }
     var questionIndex by remember { mutableIntStateOf(0) }
-    var showGrade by remember { mutableStateOf(false) }
+    var showGrade by remember { mutableStateOf(false) } 
     var inputError by remember { mutableStateOf(false) }
 
     val userSelections = remember { mutableStateMapOf<Int, String>() }
@@ -807,32 +818,51 @@ fun TriviaScreen(
             val current = activeQuestions[questionIndex]
             val answers = shuffledAnswersMap[questionIndex] ?: emptyList()
 
+            // State to control cascading appearance of options
+            var visibleCount by remember(questionIndex) { mutableIntStateOf(0) }
+            
+            LaunchedEffect(questionIndex) {
+                visibleCount = 0
+                for (i in 1..answers.size) {
+                    delay(150) // Cascade delay
+                    visibleCount = i
+                }
+            }
+
             QuestionBox(current, questionIndex)
             Spacer(modifier = Modifier.height(16.dp))
             
             Column(modifier = Modifier.padding(horizontal = 8.dp)) {
-                answers.forEach { answer ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { userSelections[questionIndex] = answer }
+                answers.forEachIndexed { index, answer ->
+                    AnimatedVisibility(
+                        visible = index < visibleCount,
+                        enter = fadeIn(animationSpec = tween(300)) + slideInHorizontally(
+                            initialOffsetX = { -40 },
+                            animationSpec = tween(300)
+                        )
                     ) {
-                        RadioButton(
-                            selected = (userSelections[questionIndex] == answer),
-                            onClick = { userSelections[questionIndex] = answer },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = textColor,
-                                unselectedColor = Color(0xFF97CDEC)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { userSelections[questionIndex] = answer }
+                        ) {
+                            RadioButton(
+                                selected = (userSelections[questionIndex] == answer),
+                                onClick = { userSelections[questionIndex] = answer },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = textColor,
+                                    unselectedColor = Color(0xFF97CDEC)
+                                )
                             )
-                        )
-                        Text(
-                            text = answer,
-                            fontFamily = TimesNewRoman,
-                            fontSize = 18.sp,
-                            color = textColor,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
+                            Text(
+                                text = answer,
+                                fontFamily = TimesNewRoman,
+                                fontSize = 18.sp,
+                                color = textColor,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
