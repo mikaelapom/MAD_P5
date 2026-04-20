@@ -1185,7 +1185,7 @@ fun AnswerRow(label: String,
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
-    val pagerState = rememberPagerState(pageCount = { 6 })
+    val pagerState = rememberPagerState(pageCount = { 12 })
     Column {
 
         HorizontalPager(
@@ -1193,7 +1193,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
             modifier = Modifier.fillMaxSize() // Make it take the whole screen
         ) { page ->
             when (page) {
-                0 -> FactoidBoxes(
+                9 -> FactoidBoxes(
                     modifier = Modifier.weight(1f),
                     text = "National Ranking & Academics",
                     backgroundImage = R.drawable.rankings,
@@ -1206,7 +1206,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         )
                     }
                 )
-                1 -> FactoidBoxes(
+                10 -> FactoidBoxes(
                     modifier = Modifier.weight(1f),
                     text = "Sustainability",
                     backgroundImage = R.drawable.gardens,
@@ -1219,7 +1219,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         )
                     }
                 )
-                2 -> FactoidBoxes(
+                11 -> FactoidBoxes(
                     modifier = Modifier.weight(1f),
                     text = "Athletics",
                     backgroundImage = R.drawable.athletics,
@@ -1232,7 +1232,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         )
                     }
                 )
-                3 -> FactoidBoxes(
+                7 -> FactoidBoxes(
                     modifier = Modifier.weight(1f),
                     text = "Sylvia Plath",
                     backgroundImage = R.drawable.sylviaplath,
@@ -1245,7 +1245,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         )
                     }
                 )
-                4 -> FactoidBoxes(
+                5 -> FactoidBoxes(
                     modifier = Modifier.weight(1f),
                     text = "Julia Child",
                     backgroundImage = R.drawable.juliachild,
@@ -1258,7 +1258,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         )
                     }
                 )
-                5 -> FactoidBoxes(
+                6 -> FactoidBoxes(
                     modifier = Modifier.weight(1f),
                     text = "Nancy Reagan",
                     backgroundImage = R.drawable.nancyreagan,
@@ -1267,6 +1267,84 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                             FactoidData(
                                 "Nancy Reagan",
                                 "Former first lady of the U.S who graduated from Smith with a degree in Drama and English in 1943. Before becoming first lady, she pursued her acting career, appearing in Donovan's Brain, The Next Voice You Hear, and Night Into Morning. As first lady, she launched the \"Just Say No\" campaign to oppose drug use in America's youth, The Foster Grandparent's Program to connect senior citizens to children with disabilities, and actively supported Vietnam War veterans through donations and hospital visitations."
+                            )
+                        )
+                    }
+                )
+                0-> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "History",
+                    backgroundImage = R.drawable.smith0,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "History",
+                                ""
+                            )
+                        )
+                    }
+                )
+                1-> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "The Founding of Smith College",
+                    backgroundImage = R.drawable.smith1,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Founding",
+                                "Smith college was founded in 1871 by Sophia Smith, a woman dedicated to bringing education to women. The school opened its doors to students in 1875 in Northampton, Massachusetts. The school's founding principles sought to promote scholarship and learning among young women in the pursuit of equal rights for all genders. "
+                            )
+                        )
+                    }
+                )
+                2 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "The Early Years",
+                    backgroundImage = R.drawable.earlyyears,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                            "Early Years",
+                            "Smith College was an instant success after its founding, joining the Seven Sisters college group by the 1900s. Being of the few colleges that accepted women allowed for Smith college to attract top talent and minds from across the country, producing several notable alumni. These factors caused the college to grow exponentially into the future, with several First Ladies of the united states possessing degrees from the college."
+                            )
+                        )
+                    }
+                )
+                3 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Modern Day",
+                    backgroundImage = R.drawable.modernday,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                            "Modern Day",
+                            "In the modern day Smith College still stands as a proud bastion of New England education. Featuring a small acceptance rate of around 22%, the college's selectiveness has given it a reputation as a scholarly titan, especially for Women's education. The college is still an all women's school, providing its strong education to an underprivileged class."
+                            )
+                        )
+                    }
+                )
+                8 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Fun Facts",
+                    backgroundImage = R.drawable.smith4,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Fun Facts",
+                                ""
+                            )
+                        )
+                    }
+                )
+                4 -> FactoidBoxes(
+                    modifier = Modifier.weight(1f),
+                    text = "Famous People",
+                    backgroundImage = R.drawable.famouspeople,
+                    onClick = {
+                        onFactoidClick(
+                            FactoidData(
+                                "Famous People",
+                                ""
                             )
                         )
                     }
