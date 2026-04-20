@@ -7,7 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -63,7 +66,10 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Switch
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
@@ -1185,16 +1191,38 @@ fun AnswerRow(label: String,
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
+    val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 12 })
-    Column {
+    Box(modifier = Modifier.fillMaxSize()) {
 
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize() // Make it take the whole screen
         ) { page ->
-            when (page) {
+            val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        // CHANGE 4: This makes the current page fade as you swipe
+                        alpha = 1f - kotlin.math.abs(pageOffset)
+                    }
+            ){
+                // CHANGE 5: Added AnimatedContent for the "Crossfade + Slide" requirement
+                androidx.compose.animation.AnimatedContent(
+                    targetState = page,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(800)) +
+                                scaleIn(initialScale = 0.9f) +
+                                slideInHorizontally(animationSpec = tween(800)))
+                            .togetherWith(fadeOut(animationSpec = tween(400)))
+                    },
+                    label = "FactoidAnimation"
+                ) { animatedPage ->
+            when (animatedPage) {
                 9 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "National Ranking & Academics",
                     backgroundImage = R.drawable.rankings,
                     onClick = {
@@ -1207,7 +1235,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 10 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Sustainability",
                     backgroundImage = R.drawable.gardens,
                     onClick = {
@@ -1220,7 +1248,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 11 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Athletics",
                     backgroundImage = R.drawable.athletics,
                     onClick = {
@@ -1233,7 +1261,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 7 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Sylvia Plath",
                     backgroundImage = R.drawable.sylviaplath,
                     onClick = {
@@ -1246,7 +1274,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 5 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Julia Child",
                     backgroundImage = R.drawable.juliachild,
                     onClick = {
@@ -1259,7 +1287,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 6 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Nancy Reagan",
                     backgroundImage = R.drawable.nancyreagan,
                     onClick = {
@@ -1272,7 +1300,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 0-> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "History",
                     backgroundImage = R.drawable.smith0,
                     onClick = {
@@ -1285,7 +1313,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 1-> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "The Founding of Smith College",
                     backgroundImage = R.drawable.smith1,
                     onClick = {
@@ -1298,7 +1326,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 2 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "The Early Years",
                     backgroundImage = R.drawable.earlyyears,
                     onClick = {
@@ -1311,7 +1339,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 3 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Modern Day",
                     backgroundImage = R.drawable.modernday,
                     onClick = {
@@ -1324,7 +1352,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 8 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Fun Facts",
                     backgroundImage = R.drawable.smith4,
                     onClick = {
@@ -1337,17 +1365,45 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                     }
                 )
                 4 -> FactoidBoxes(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxSize(),
                     text = "Famous People",
                     backgroundImage = R.drawable.famouspeople,
                     onClick = {
                         onFactoidClick(
                             FactoidData(
                                 "Famous People",
-                                ""
-                            )
+                                "")) }
+                )
+            }
+        }
+    }
+}
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter) // Puts dots at the bottom center
+                .padding(bottom = 30.dp)       // Spacing from edge
+                .background(Color.Black.copy(alpha = 0.3f), CircleShape) // Background "Pill" for visibility
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(12) { iteration ->
+                val isSelected = pagerState.currentPage == iteration
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp)
+                        .size(if (isSelected) 10.dp else 7.dp)
+                        .clip(CircleShape)
+                        // CHANGE 8: White for active, Transparent Dark Blue for inactive
+                        .background(
+                            if (isSelected) Color.White
+                            else Color(0xFF1A2C57).copy(alpha = 0.6f)
                         )
-                    }
+                        .clickable {
+                            // CHANGE 9: Link the dots to the pager animation
+                            scope.launch { pagerState.animateScrollToPage(iteration) }
+                        }
                 )
             }
         }
@@ -1384,14 +1440,34 @@ fun FactoidBoxes(
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.5f))
         )
-        Text(
-            text = text,
-            color = Color(0xAFFFFFFF),
-            fontFamily = TimesNewRoman,
-            fontSize = 24.sp,
-            textAlign = TextAlign.Center
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = text,
+                color = Color(0xAFFFFFFF),
+                fontFamily = TimesNewRoman,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center
+            )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "ⓘ Tap for Details",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 
