@@ -1,4 +1,4 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

@@ -1,8 +1,7 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 //used as db table for each course

@@ -1,4 +1,6 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
+
+import com.mikaelap.smithcollege.R
 
 val testEvent1 = schoolEvent(
     title = "Chemistry Lecture: Lisa Olshansky",

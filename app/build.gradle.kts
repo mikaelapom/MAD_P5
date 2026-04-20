@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.mikaelap.myapplication"
+    namespace = "com.mikaelap.smithcollege"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.mikaelap.myapplication"
+        applicationId = "com.mikaelap.smithcollege"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

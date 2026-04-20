@@ -1,4 +1,4 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
 
 import android.app.Application
 import android.os.Bundle
@@ -255,9 +255,9 @@ fun SettingsScreen(
                         .padding(8.dp)
                 ) {
                     val credits = listOf(
-                        Pair("Mikaela Pomfret", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
-                        Pair("Quetzaly Paz-Mondesi", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex"),
-                        Pair("Diana Livengood", "lLorem ipsum dolor sit amet, quo graecis expetenda reprehendunt et. Et has nulla intellegat. Ea vix equidem abhorreant deseruisse, eos quod suas labore ex")
+                        Pair("Mikaela Pomfret", "Group leader, database developer, and researcher."),
+                        Pair("Quetzaly Paz-Mondesi", "Animation expert, UI, and backend developer."),
+                        Pair("Diana Livengood", "UI expert, researcher, and tester. ")
                     )
 
                     credits.forEach { credit ->
@@ -293,8 +293,8 @@ fun SettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                
-                // Important dates section with yellow border
+
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -302,13 +302,13 @@ fun SettingsScreen(
                         .padding(12.dp)
                 ) {
                     val dates = listOf(
-                        "Registration Period: Aug 15 - Sept 1",
-                        "First Day of Classes: Sept 4, 2024",
-                        "Add/Drop Deadline: Sept 18, 2024",
-                        "Midterm Exams: Oct 20 - Oct 25",
-                        "Thanksgiving Break: Nov 27 - Nov 29",
-                        "Last Day of Classes: Dec 13, 2024",
-                        "Final Exams: Dec 16 - Dec 20"
+                        "Registration Period: Mar 15 - Apr 1",
+                        "First Day of Classes: Jan 14, 2026",
+                        "Add/Drop Deadline: Jan 30, 2026",
+                        "Midterm Exams: Feb 23 - Feb 27",
+                        "Spring Break: Mar 14 - Mar 22",
+                        "Last Day of Classes: Apr 29, 2026",
+                        "Final Exams: May 4 - May 8"
                     )
                     
                     dates.forEach { dateText ->
@@ -423,7 +423,7 @@ fun GPAScreen(
             .fillMaxSize()
             .background(bgColor)
     ) {
-        com.mikaelap.myapplication.CustomTextField(
+        com.mikaelap.smithcollege.CustomTextField(
             title = "Course Name",
             textState = courseName,
             onTextChange = onCourseTextChange,
@@ -433,7 +433,7 @@ fun GPAScreen(
 //            Modifier.border(width = 0.5.dp, Color(0xFF1A2C57))
         )
 
-        com.mikaelap.myapplication.CustomTextField(
+        com.mikaelap.smithcollege.CustomTextField(
             title = "Credit Hour",
             textState = courseCreditHour,
             onTextChange = onCreditHourTextChange,
@@ -443,7 +443,7 @@ fun GPAScreen(
         )
 
 
-        com.mikaelap.myapplication.CustomTextField(
+        com.mikaelap.smithcollege.CustomTextField(
             title = "Letter Grade",
             textState = letterGrade,
             onTextChange = onLetterGradeTextChange,
@@ -521,7 +521,7 @@ fun GPAScreen(
             ) {
                 Text("Del")
             }
-            calculatedGPA = com.mikaelap.myapplication.calculateGPA2(allCourses)
+            calculatedGPA = com.mikaelap.smithcollege.calculateGPA2(allCourses)
 
             Button(onClick = {
                 searching = false
@@ -535,7 +535,7 @@ fun GPAScreen(
 
             Button(onClick = {
 
-                val gpa = com.mikaelap.myapplication.calculateGPA2(allCourses)
+                val gpa = com.mikaelap.smithcollege.calculateGPA2(allCourses)
                 calculatedGPA = gpa
 
             }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC),contentColor = Color(0xFF1A2C57))
@@ -555,7 +555,7 @@ fun GPAScreen(
             val list = if (searching) searchResults else allCourses
 
             item {
-                com.mikaelap.myapplication.TitleRow(
+                com.mikaelap.smithcollege.TitleRow(
                     head1 = "ID",
                     head2 = "Course",
                     head3 = "Credit Hour",
@@ -564,7 +564,7 @@ fun GPAScreen(
             }
 
             items(list) { course ->
-                com.mikaelap.myapplication.CourseRow(
+                com.mikaelap.smithcollege.CourseRow(
                     id = course.id,
                     name = course.courseName,
                     creditHour = course.creditHour,
@@ -991,6 +991,7 @@ fun InfoBox(
     }
 }
 
+//displays score at the end of quiz
 @Composable
 fun ScoreText(score: String, isDarkMode: Boolean) {
     val textColor = if (isDarkMode) Color.White else Color(0xFF1A2C57)
@@ -1135,58 +1136,6 @@ fun QuestionBox(question: TrivialQuestion, index: Int) {
     }
 }
 
-@Composable
-fun AnswerRow(label: String,
-              text: String,
-              questionIndex: Int,
-              listIndex: Int,
-              answerIndex: List<String>,
-              question: TrivialQuestion,
-              answered: List<Boolean>,
-              onAnswered: (isCorrect: Boolean) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(
-            onClick = {
-                val isCorrect = answerIndex[listIndex] == question.correct
-                onAnswered(isCorrect)
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (answered[questionIndex] && answerIndex[listIndex] == question.correct) Color.Green
-                else if (answered[questionIndex] && answerIndex[listIndex] != question.correct) Color.Red
-                else
-                    Color(0xFF97CDEC),
-                contentColor = Color(0xFF1A2C57)
-
-            ),
-            shape = CircleShape,
-            modifier = Modifier.size(44.dp),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-        ) {
-            Text(label,
-                textAlign = TextAlign.Center,
-                style = TextStyle(
-                    fontSize = 18.sp,
-                    color = Color(0xFF1A2C57)
-                )
-            )
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text,
-            fontFamily = TimesNewRoman,
-            style = TextStyle(
-                fontSize = 18.sp,
-                color = Color(0xFF1A2C57)
-            )
-        )
-    }
-}
-
 //Fame Functions
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1205,11 +1154,9 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        // CHANGE 4: This makes the current page fade as you swipe
                         alpha = 1f - kotlin.math.abs(pageOffset)
                     }
             ){
-                // CHANGE 5: Added AnimatedContent for the "Crossfade + Slide" requirement
                 androidx.compose.animation.AnimatedContent(
                     targetState = page,
                     transitionSpec = {
@@ -1307,7 +1254,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         onFactoidClick(
                             FactoidData(
                                 "History",
-                                ""
+                                "Swipe through the history of Smith College including the founding, early years, and modern day."
                             )
                         )
                     }
@@ -1359,7 +1306,10 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         onFactoidClick(
                             FactoidData(
                                 "Fun Facts",
-                                ""
+                                "• Smith College was the first historically women’s college to offer an undergraduate engineering degree.\n\n" +
+                                        "• Smith College has 15 beautiful gardens across its campus.\n\n" +
+                                        "• Smith College has been led by 11 presidents and two acting presidents.\n\n" +
+                                        "• The college’s official motto is “To Virtue, Knowledge.”"
                             )
                         )
                     }
@@ -1372,7 +1322,7 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         onFactoidClick(
                             FactoidData(
                                 "Famous People",
-                                "")) }
+                                "Swipe through an assortment of famous and successful alumni from Smith College.")) }
                 )
             }
         }
@@ -1381,9 +1331,9 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
 
         Row(
             modifier = Modifier
-                .align(Alignment.BottomCenter) // Puts dots at the bottom center
+                .align(Alignment.BottomCenter) // dots at the bottom center
                 .padding(bottom = 30.dp)       // Spacing from edge
-                .background(Color.Black.copy(alpha = 0.3f), CircleShape) // Background "Pill" for visibility
+                .background(Color.Black.copy(alpha = 0.3f), CircleShape) // bg pill for visibility
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -1395,13 +1345,11 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
                         .padding(horizontal = 4.dp)
                         .size(if (isSelected) 10.dp else 7.dp)
                         .clip(CircleShape)
-                        // CHANGE 8: White for active, Transparent Dark Blue for inactive
                         .background(
                             if (isSelected) Color.White
                             else Color(0xFF1A2C57).copy(alpha = 0.6f)
                         )
                         .clickable {
-                            // CHANGE 9: Link the dots to the pager animation
                             scope.launch { pagerState.animateScrollToPage(iteration) }
                         }
                 )
@@ -1473,7 +1421,6 @@ fun FactoidBoxes(
 
 //GPA Calculator
 private fun calculateGPA2(allCourses: List<Course>): Double {
-    // Dummy data for illustration. Replace with actual data retrieval and calculation logic
 
     val gradePoints = mapOf(
         "A+" to 4.0, "A" to 4.0, "A-" to 3.7,
@@ -1505,7 +1452,7 @@ fun TitleRow(head1: String, head2: String, head3: String, head4: String, isDarkM
             .fillMaxWidth()
             .padding(5.dp)
     ) {
-        val timesNewRomanStyle = TextStyle(fontFamily = com.mikaelap.myapplication.TimesNewRoman,
+        val timesNewRomanStyle = TextStyle(fontFamily = com.mikaelap.smithcollege.TimesNewRoman,
             fontSize = 18.sp,
             color = textColor
         )

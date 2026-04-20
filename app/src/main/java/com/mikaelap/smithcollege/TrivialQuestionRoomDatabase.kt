@@ -1,4 +1,4 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
 
 import android.content.Context
 import androidx.room.Database

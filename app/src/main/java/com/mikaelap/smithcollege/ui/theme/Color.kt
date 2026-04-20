@@ -1,4 +1,4 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
 
 import androidx.compose.ui.graphics.Color
 

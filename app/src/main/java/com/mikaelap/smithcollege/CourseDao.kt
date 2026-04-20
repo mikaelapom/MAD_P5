@@ -1,4 +1,4 @@
-package com.mikaelap.myapplication
+package com.mikaelap.smithcollege
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
