@@ -16,15 +16,19 @@ interface CourseDao {
     @Query("SELECT * FROM courses WHERE courseName LIKE :name")
     fun findCourseByName(name: String): List<Course>
 
+    //lookup by matching credit hour
     @Query("SELECT * FROM courses WHERE creditHour = :creditHour")
     fun findCourseByCreditHour(creditHour: Int): List<Course>
 
+    //lookup by matching letter grade
     @Query("SELECT * FROM courses WHERE letterGrade = :letterGrade")
     fun findCourseByLetterGrade(letterGrade: String): List<Course>
 
+    //removes course
     @Query("DELETE FROM courses WHERE courseId = :id")
     fun deleteCourse(id: Int)
 
+    //returns all course
     @Query("SELECT * FROM courses")
     fun getAllCourses(): LiveData<List<Course>>
 

@@ -21,8 +21,6 @@ class Course {
     @ColumnInfo(name = "letterGrade")
     var letterGrade: String = ""
 
-    constructor() {}
-
     constructor(coursename: String, creditHour: Int, letterGrade: String) {
         this.courseName = coursename
         this.creditHour = creditHour

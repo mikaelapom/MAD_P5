@@ -1,5 +1,6 @@
 package com.mikaelap.smithcollege
 
+//seed to populate questions
 val seedQuestions = listOf(
     TrivialQuestion(
         "When was Smith College Founded?",

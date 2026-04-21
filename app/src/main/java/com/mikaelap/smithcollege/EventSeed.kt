@@ -1,7 +1,7 @@
 package com.mikaelap.smithcollege
 
 import com.mikaelap.smithcollege.R
-
+//used to add events into the events page without relying on mainactivity file
 val testEvent1 = schoolEvent(
     title = "Chemistry Lecture: Lisa Olshansky",
     shortDescription = "▼ TAP FOR DETAILS ▼\nFord Hall 240 4:30-5:30 p.m.",

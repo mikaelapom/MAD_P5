@@ -7,8 +7,6 @@ import androidx.room.Query
 
 @Dao
 interface TrivialQuestionDao {
-
-    //to do: add error message if they are missing an input
     @Insert
     fun insertQuestion(question: TrivialQuestion)
 

@@ -1,6 +1,5 @@
 package com.mikaelap.smithcollege
 
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -71,6 +70,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+//font family val
 val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Normal),
     Font(R.font.times, FontWeight.Bold),
@@ -78,11 +78,13 @@ val TimesNewRoman = FontFamily(
     Font(R.font.times, FontWeight.Bold, FontStyle.Italic)
 )
 
+//class for each factoid (Home Tab)
 data class FactoidData(
     val title: String,
     val description: String
 )
 
+//class events in event tab
 data class schoolEvent(
     val title: String,
     val shortDescription: String,
@@ -112,7 +114,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(viewModel: MainViewModel) {
     var selectedTabIndex by remember { mutableIntStateOf(2) }
     val tabs = listOf("Trivia", "Acad", "Home", "Events", "⚙\uFE0F") //list out each tab
-    var isDarkMode by remember { mutableStateOf(true) } //dark mode global
+    var isDarkMode by remember { mutableStateOf(true) } //dark mode by default
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -248,12 +250,13 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // Yellow border around the credits area
+                //add in yellow border around the credits area to seperate from other sections
                 Column(
                     modifier = Modifier
                         .border(2.dp, yellow)
                         .padding(8.dp)
                 ) {
+                    //when credit is clicked, alert dialogue pops up with more info
                     val credits = listOf(
                         Pair("Mikaela Pomfret", "Group leader, database developer, and researcher. Responsible for backend and database logic."),
                         Pair("Quetzaly Paz-Mondesi", "Animation expert, UI, and backend developer. Responsible for integrating crossfade animation and graphics."),
@@ -265,7 +268,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
-                                .background(yellow) // Always yellow
+                                .background(yellow)
                                 .border(1.dp, darkBlue)
                                 .clickable { selectedCredit = credit }
                                 .padding(12.dp),
@@ -273,7 +276,7 @@ fun SettingsScreen(
                         ) {
                             Text(
                                 text = credit.first,
-                                color = darkBlue, // Dark blue font for yellow background
+                                color = darkBlue,
                                 fontFamily = TimesNewRoman,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
@@ -301,6 +304,7 @@ fun SettingsScreen(
                         .border(2.dp, yellow)
                         .padding(12.dp)
                 ) {
+                    //extra informtation for the user, no backend required
                     val dates = listOf(
                         "Registration Period: Mar 15 - Apr 1",
                         "First Day of Classes: Jan 14, 2026",
@@ -325,7 +329,7 @@ fun SettingsScreen(
             }
         }
 
-        // Version Number at the very bottom, centered
+        //put version number at the very bottom
         Text(
             text = "Version: 3.1.2",
             color = textColor,
@@ -423,17 +427,16 @@ fun GPAScreen(
             .fillMaxSize()
             .background(bgColor)
     ) {
-        com.mikaelap.smithcollege.CustomTextField(
+        CustomTextField(
             title = "Course Name",
             textState = courseName,
             onTextChange = onCourseTextChange,
             keyboardType = KeyboardType.Text,
             isError = courseNameError,
             errorMessage = courseNameErrorMessage, isDarkMode = isDarkMode
-//            Modifier.border(width = 0.5.dp, Color(0xFF1A2C57))
         )
 
-        com.mikaelap.smithcollege.CustomTextField(
+        CustomTextField(
             title = "Credit Hour",
             textState = courseCreditHour,
             onTextChange = onCreditHourTextChange,
@@ -443,7 +446,7 @@ fun GPAScreen(
         )
 
 
-        com.mikaelap.smithcollege.CustomTextField(
+        CustomTextField(
             title = "Letter Grade",
             textState = letterGrade,
             onTextChange = onLetterGradeTextChange,
@@ -521,7 +524,7 @@ fun GPAScreen(
             ) {
                 Text("Del")
             }
-            calculatedGPA = com.mikaelap.smithcollege.calculateGPA2(allCourses)
+            calculatedGPA = calculateGPA2(allCourses)
 
             Button(onClick = {
                 searching = false
@@ -535,7 +538,7 @@ fun GPAScreen(
 
             Button(onClick = {
 
-                val gpa = com.mikaelap.smithcollege.calculateGPA2(allCourses)
+                val gpa = calculateGPA2(allCourses)
                 calculatedGPA = gpa
 
             }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF97CDEC),contentColor = Color(0xFF1A2C57))
@@ -555,7 +558,7 @@ fun GPAScreen(
             val list = if (searching) searchResults else allCourses
 
             item {
-                com.mikaelap.smithcollege.TitleRow(
+                TitleRow(
                     head1 = "ID",
                     head2 = "Course",
                     head3 = "Credit Hour",
@@ -564,7 +567,7 @@ fun GPAScreen(
             }
 
             items(list) { course ->
-                com.mikaelap.smithcollege.CourseRow(
+                CourseRow(
                     id = course.id,
                     name = course.courseName,
                     creditHour = course.creditHour,
@@ -1583,13 +1586,5 @@ fun CustomTextField(
                 modifier = Modifier.padding(start = 16.dp)
             )
         }
-    }
-}
-
-//creates view model
-class MainViewModelFactory(val application: Application) :
-    ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(application) as T
     }
 }

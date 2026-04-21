@@ -17,7 +17,4 @@ class TrivialQuestionRepository(private val TrivialQuestionDao: TrivialQuestionD
             TrivialQuestionDao.insertQuestion(newquestion)
         }
     }
-    private fun asyncFindByName(name: String): Deferred<List<TrivialQuestion>> =
-        coroutineScope.async(Dispatchers.IO) { TrivialQuestionDao.findQuestionByName(name) }
-
 }
