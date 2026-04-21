@@ -255,9 +255,9 @@ fun SettingsScreen(
                         .padding(8.dp)
                 ) {
                     val credits = listOf(
-                        Pair("Mikaela Pomfret", "Group leader, database developer, and researcher."),
-                        Pair("Quetzaly Paz-Mondesi", "Animation expert, UI, and backend developer."),
-                        Pair("Diana Livengood", "UI expert, researcher, and tester. ")
+                        Pair("Mikaela Pomfret", "Group leader, database developer, and researcher. Responsible for backend and database logic."),
+                        Pair("Quetzaly Paz-Mondesi", "Animation expert, UI, and backend developer. Responsible for integrating crossfade animation and graphics."),
+                        Pair("Diana Livengood", "UI expert, researcher, and tester. Responsible for the neat layout of composables and testing until perfection.")
                     )
 
                     credits.forEach { credit ->
