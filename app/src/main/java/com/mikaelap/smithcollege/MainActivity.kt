@@ -1329,6 +1329,54 @@ fun Factoids(onFactoidClick: (FactoidData) -> Unit) {
     }
 }
 
+        //left nav arrow
+        if (pagerState.currentPage > 0) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 16.dp)
+                    .size(48.dp)
+                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                    .clickable {
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "←",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        //right nav arrow
+        if (pagerState.currentPage < 11) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 16.dp)
+                    .size(48.dp)
+                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                    .clickable {
+                        scope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "→",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter) // dots at the bottom center
